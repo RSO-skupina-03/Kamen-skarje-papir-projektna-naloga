@@ -5,11 +5,11 @@ MOZNOSTI = ['Kamen', 'Skarje', 'Papir']
 class KamenSkarjePapir:
 
     def __init__(self):
-        self.moznost = [None, None]
+        self.orozje = [None, None]
         # Na [0] mestu je možnost, ki jo je izbral igralec, na [1] je možnoat ki jo je izbral računalnik
         self.racunalnik = 0
         self.igralec = 0
-        # Spremeba!!! igra do 7 iger in se bo potem določilo zmagovalca
+        # Sprememba!!! igra do 7 iger in se bo potem določilo zmagovalca
     def tocka_za_igralca(self):
         return self.igralec += 1
 
@@ -20,33 +20,60 @@ class KamenSkarjePapir:
         return self.igralec + self.racunalnik == 7
     
     def zmaga_igralca(self):
-        return self.igralec > self.racunalnik
+        return self.igralec > self.racunalnik and self.konec_igre() == True
 
     def poraz_igralca(self):
-        return self.igralec < self.racunalnik
+        return self.igralec < self.racunalnik and self.konec_igre() == True
+    
+    def delni_izid_igralca(self):
+        return self.igralec
+    
+    def delni_izid_racunalnika(self):
+        return self.racunalnik
+    
+    def koncni_izid_racunalnika(self):
+        if self.konec_igre() == True:
+            return self.racunalnik
+        else:
+            pass
 
-        
+    def koncni_izid_igralca(self):
+        if self.konec_igre() == True:
+            return self.igralec
+        else:
+            pass
+    def izberi_orozje(self):
+
+        racunalnik = MOZNOSTI[randint(0, 2)]
+        igralce = MOZNOSTI[1] # npr. potem bom dal na izbiro katero orožje lahko izbere
+
+        pass
+
     def potek_igre(self):
+
+        igralec = self.orozje[0].upper()[0]
+        racunalnik = self.orozje[1].upper()[0]
+
         while self.konec_igre() == False:
-            if self.racunalnik == self.igralec:
-                pass
-            elif self.racunalnik == 'Kamen':
-                if self.igralec == 'Papir':
+            if igralec == racunalnik:
+                continue
+            elif racunalnik == 'K':
+                if igralec == 'P':
                     return self.tocka_za_igralca()
                 else:
                     return self.tocka_za_racunalnik()
-            elif self.racunalnik == 'Skarje':
-                if self.igralec == 'Kamen':
+            elif racunalnik == 'S':
+                if igralec == 'K':
                     return self.tocka_za_igralca
                 else:
                     return self.tocka_za_racunalnik()
-            elif self.racunalnik == 'Papir':
-                if self.igralec == 'Skarje':
+            elif racunalnik == 'P':
+                if igralec == 'S':
                     return self.tocka_za_igralca()
                 else:
-                    return self.izguba_zivljenja_igralec()
+                    return self.tocka_za_racunalnik()
             else:
-                return self.poraz()
+                pass
 
 def nova_igra():
     return KamenSkarjePapir()
