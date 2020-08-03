@@ -24,18 +24,20 @@ def zacetni_menu():
         izbira = input('VPIŠITE IZBIRO: ')
 
         if izbira == '1':
+            ksp = KamenSkarjePapir()
             print('DOBRODOŠLI V IGRI KAMEN ŠKARJE PAPIR')
-            kamen_skarje_papir()
+            kamen_skarje_papir(ksp)
         elif izbira == '2':
-            kamen_skarje_papir_ogenj_voda()
+            kspov = KamenSkarjePapirOgenjVoda()
+            print('DOBRODOŠLI V IGRI KAMEN ŠKARJE PAPIR OGENJ')
+            kamen_skarje_papir_ogenj_voda(kspov)
         elif izbira == '3':
             print('Nasvidenje')
             break
         else:
             print('Vpišite številko 1, 2 ali 3')
 
-def kamen_skarje_papir():
-
+def kamen_skarje_papir(ksp):
 
     print('''
     Izberite si orožje:
@@ -44,47 +46,36 @@ def kamen_skarje_papir():
     3: Papir
         ''')
 
-    izbira = input('> ')
-    prava_izbira = izbira.lower()
+    while ksp.konec_igre() == False:
 
-    if prava_izbira == 'kamen' or prava_izbira =='1':
-        KamenSkarjePapir(0)
-    elif prava_izbira == 'škarje' or prava_izbira == '2':
-        KamenSkarjePapir(1)
-    elif prava_izbira == 'papir' or prava_izbira == '3':
-        KamenSkarjePapir(2)
-    else:
-        print('Vpišite ime orožja ali pa številko pred orožjem')
+        izbira = input('> ')
+        prava_izbira = int(izbira) - 1
 
+        if prava_izbira == 0 or prava_izbira == 1 or prava_izbira == 2:
+            ksp.potek_igre(prava_izbira)
+        else:
+            print('Vpišite številko pred orožjem')
 
-
-def kamen_skarje_papir_ogenj_voda():
+def kamen_skarje_papir_ogenj_voda(kspov):
     print('''
-    DOBRODOŠLI V IGRI KAMEN ŠKARJE PAPIR OGENJ
     
     Izberite si orožje:
     1: Kamen
     2: Škarje
     3: Papir
     4: Ogenj
-    5: Voda
-    ''')
+    5: Voda''')
 
-    izbira = input('> ')
-    prava_izbira = izbira.lower()
+    while kspov.konec_igre_1() == False:
 
-    if prava_izbira == 'kamen' or prava_izbira =='1':
-        KamenSkarjePapirOgenjVoda(0)
-    elif prava_izbira == 'škarje' or prava_izbira == '2':
-        KamenSkarjePapirOgenjVoda(1)
-    elif prava_izbira == 'kamen' or prava_izbira == '3':
-        KamenSkarjePapirOgenjVoda(2)
-    elif prava_izbira == 'ogenj' or prava_izbira == '4':
-        KamenSkarjePapirOgenjVoda(3)
-    elif prava_izbira == 'voda' or prava_izbira == '5':
-        KamenSkarjePapirOgenjVoda(4) 
-    else:
-        print('Vpišite ime orožja ali pa številko pred orožjem')
+        izbira = input('> ')
+        prava_izbira = int(izbira) - 1
+
+        if prava_izbira == 0 or prava_izbira == 1 or prava_izbira == 2 or prava_izbira == 3 or prava_izbira == 4:
+            kspov.potek_igre_1(prava_izbira)
+        else:
+            print('Vpišite ime orožja ali pa številko pred orožjem')
+
 zacetni_menu()
 
 

@@ -5,8 +5,7 @@ MOZNOSTI_2 = ['Kamen', 'Skarje', 'Papir', 'Voda', 'Ogenj']
 
 class Igra:
 
-    def __init__(self, orozje):
-        self.orozje = orozje # v ta parameter se bo shtanjeval indeks, ki ga je igralec izbral za svoje orožje
+    def __init__(self):
         self.igralec = 0
         self.racunalnik = 0
 
@@ -24,13 +23,11 @@ class Igra:
 
 class KamenSkarjePapir(Igra):
 
-    def __init__(self, orozje):
-        super().__init__(orozje)
+    def potek_igre(self, izbrano_orozje):
     # Sprememba!!! igra se do 7 iger in se bo potem določilo zmagovalca
-        while self.konec_igre() == False:
             slovar_izbir = {'Kamen': 0, 'Skarje': 1, 'Papir': 2}
 
-            igralec = slovar_izbir.get(self.izberi_orozje_igralec())
+            igralec = slovar_izbir.get(MOZNOSTI[izbrano_orozje])
             racunalnik = slovar_izbir.get(self.izberi_orozje_racunalnik())
 
             mozni_izidi = [
@@ -49,9 +46,6 @@ class KamenSkarjePapir(Igra):
                 pass
     def izberi_orozje_racunalnik(self):
         return MOZNOSTI[randint(0, 2)]
-
-    def izberi_orozje_igralec(self):
-        return MOZNOSTI[self.orozje] # npr. potem bom dal na izbiro katero orožje lahko izbere
 
     def konec_igre(self):
         return self.igralec + self.racunalnik == 7
@@ -76,13 +70,12 @@ class KamenSkarjePapir(Igra):
 
 class KamenSkarjePapirOgenjVoda(Igra):
 
-    def __init__(self, orozje):
-        super().__init__(orozje)
+    def potek_igre_1(self, izbrano_orozje):
 
         while self.konec_igre_1() == False:
             slovar_izbir = {'Kamen': 0, 'Skarje': 1, 'Papir': 2, 'Ogenj': 3, 'Voda': 4}
 
-            igralec = slovar_izbir.get(self.izberi_orozje_1_igralec())
+            igralec = slovar_izbir.get(MOZNOSTI_2[izbrano_orozje])
             racunalnik = slovar_izbir.get(self.izberi_orozje_1_racunalnik())
 
 
@@ -106,9 +99,6 @@ class KamenSkarjePapirOgenjVoda(Igra):
     def izberi_orozje_1_racunalnik(self):
         return MOZNOSTI_2[randint(0, 4)]
     
-    def izberi_orozje_1_igralec(self):
-        return MOZNOSTI_2[self.orozje] # to bo igralec sam določil kaj bo igral
-
     def zmaga_igralca_1(self):
         return self.igralec > self.racunalnik and self.konec_igre_1() == True
 
@@ -129,7 +119,6 @@ class KamenSkarjePapirOgenjVoda(Igra):
             return self.igralec
         else:
             pass
-
 
 
         
