@@ -2,6 +2,7 @@ from random import randint
 
 MOZNOSTI = ['Kamen', 'Škarje', 'Papir']
 MOZNOSTI_2 = ['Kamen', 'Škarje', 'Papir', 'Voda', 'Ogenj']
+ZACETNO_STANJE = 'Začetno stanje'
 
 class Igra:
 
@@ -42,8 +43,10 @@ class KamenSkarjePapir(Igra):
                 self.tocka_za_igralca()
             elif rezultat == -1:
                 self.tocka_za_racunalnik()
-            else:
+            elif rezultat == 0:
                 pass
+            else:
+                assert False
 
     def izberi_orozje_racunalnik(self):
         return MOZNOSTI[randint(0, 2)]
@@ -89,8 +92,10 @@ class KamenSkarjePapirOgenjVoda(Igra):
                 self.tocka_za_igralca()
             elif rezultat == -1:
                 self.tocka_za_racunalnik()
-            else:
+            elif rezultat == 0:
                 pass
+            else:
+                assert False
             
     def izberi_orozje_1_racunalnik(self):
         return MOZNOSTI_2[randint(0, 4)]
@@ -117,7 +122,25 @@ def nova_igra():
     return KamenSkarjePapir()
 
 def nova_igra_1():
-    return KamenSkarjePapirOgenjVoda
+    return KamenSkarjePapirOgenjVoda()
+
+class DatotekaKSP:
+
+    def __init__(self):
+        self.igre = {}
+    
+    def prosti_id_igre(self):
+        if len(self.igre) == 0:
+            return 0
+        else:
+            return len(self.igre) + 1
+
+    def nova_igra(self):
+        nov_id = self.prosti_id_igre()
+        sveza_igra = nova_igra()
+            
+        self.igre[nov_id] = (sveza_igra, ZACETNO_STANJE)
+        return nov_id
 
 
         
