@@ -32,18 +32,18 @@ class KamenSkarjePapir(Igra):
             racunalnik = slovar_izbir.get(self.izberi_orozje_racunalnik())
 
             mozni_izidi = [
-                [0, 1, -1],
-                [-1, 0, 1],
-                [1, -1, 0]
-            ] # 1 pomeni, da je zmagal igralec -1 pomeni da je zmagal računalnik 0 pomeni izenačenje
+                [3, 1, 2],
+                [2, 3, 1],
+                [1, 2, 3]
+            ] # 1 pomeni, da je zmagal igralec 2 pomeni da je zmagal računalnik 3 pomeni izenačenje
             # igralec predstavlja vrstice, računalnik predstavlja stolpce
             rezultat = mozni_izidi[igralec][racunalnik]
 
             if rezultat == 1:
                 self.tocka_za_igralca()
-            elif rezultat == -1:
+            elif rezultat == 2:
                 self.tocka_za_racunalnik()
-            elif rezultat == 0:
+            elif rezultat == 3:
                 pass
             else:
                 assert False
@@ -79,20 +79,20 @@ class KamenSkarjePapirOgenjVoda(Igra):
             racunalnik = slovar_izbir.get(self.izberi_orozje_1_racunalnik())
 
             mozni_izidi = [
-                [0, 1, -1, -1, 1],
-                [-1, 0, 1, -1, 1],
-                [1, -1, 0, -1, 1],
-                [1, 1, 1, 0, -1],
-                [-1, -1, -1, 1, 0]
+                [3, 1, 2, 2, 1],
+                [2, 3, 1, 2, 1],
+                [1, 2, 3, 2, 1],
+                [1, 1, 1, 3, 2],
+                [2, 2, 2, 1, 3]
             ]
 
             rezultat = mozni_izidi[igralec][racunalnik]
 
             if rezultat == 1:
                 self.tocka_za_igralca()
-            elif rezultat == -1:
+            elif rezultat == 2:
                 self.tocka_za_racunalnik()
-            elif rezultat == 0:
+            elif rezultat == 3:
                 pass
             else:
                 assert False
@@ -124,7 +124,7 @@ def nova_igra():
 def nova_igra_1():
     return KamenSkarjePapirOgenjVoda()
 
-class DatotekaKSP:
+class Datoteka:
 
     def __init__(self):
         self.igre = {}
@@ -134,11 +134,22 @@ class DatotekaKSP:
             return 0
         else:
             return len(self.igre) + 1
+            
+class KSP(Datoteka):
 
     def nova_igra(self):
         nov_id = self.prosti_id_igre()
         sveza_igra = nova_igra()
             
+        self.igre[nov_id] = (sveza_igra, ZACETNO_STANJE)
+        return nov_id
+
+class KSPOV(Datoteka):
+
+    def nova_igra_1(self):
+        nov_id = self.prosti_id_igre()
+        sveza_igra = nova_igra_1()
+
         self.igre[nov_id] = (sveza_igra, ZACETNO_STANJE)
         return nov_id
 
