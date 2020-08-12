@@ -1,2 +1,0 @@
-% rebase('views/base.tpl')
-
