@@ -1,4 +1,4 @@
-%from model import KamenSkarjePapir as ksp
+%import model
 %rebase('views/base.tpl')
 
 <h3>KAMEN ŠKARJE PAPIR</h3>
@@ -8,7 +8,7 @@
     Igralo se bo minimalno 7 iger 
 </BLOckquote>
 
-<h2>REZULTAT: {{ksp.delni_izid_igralca()}} : {{ksp.delni_izid_racunalnika()</h2>
+<h2>REZULTAT: {{igra.delni_izid_igralca()}} : {{igra.delni_izid_racunalnika()</h2>
 
 % if ksp.zmaga_igralca() == True:
     <h1>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM: {{igra.koncni_izid_igralca()}} : {{igra.koncni_izid_racunalnika()}}</h1>
@@ -17,12 +17,13 @@
 %end
 
 <form action="/ksp/" method="POST">
-    <input type="radio" name="orozje" value="0">
     Kamen
-    <input type="radio" name="orozje" value="1">
+    <input type="radio" name="orozje" value="0">
     Škarje
-    <input type="radio" name="orozje" value="2">
+    <input type="radio" name="orozje" value="1">
     Papir
-    <input type="submit" value="Potrdi">
+    <input type="radio" name="orozje" value="2">
+    
+    <button type="submit">Potrdi</button>
 </form>
 

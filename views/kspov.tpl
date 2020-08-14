@@ -17,15 +17,16 @@
 %end
 
 <form action="/ksp/" method="POST">
-    <input type="radio" name="orozje" value="0">
     Kamen
-    <input type="radio" name="orozje" value="1">
+    <input type="radio" name="orozje" value="0">
     Škarje
-    <input type="radio" name="orozje" value="2">
+    <input type="radio" name="orozje" value="1">
     Papir
+    <input type="radio" name="orozje" value="2">
+    Ogrenj
     <input type="radio" name="orozje" value="3">
-    Ogenj
-    <input type="radio" name="orozje" value="4">
     Voda
+    <input type="radio" name="orozje" value="4">
+    
     <input type="submit" value="Potrdi">
 </form>
