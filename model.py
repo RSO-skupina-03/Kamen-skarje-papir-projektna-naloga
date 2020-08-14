@@ -1,14 +1,17 @@
 from random import randint
+import json
 
 MOZNOSTI = ['Kamen', 'Škarje', 'Papir']
 MOZNOSTI_2 = ['Kamen', 'Škarje', 'Papir', 'Voda', 'Ogenj']
-ZACETNO_STANJE = 'Začetno stanje'
+DATOTEKA_KSP = 'datoteke/ksp.json'
+DATOTEKA_KSPOV = 'datoteke/kspov.json'
+ZACETEK = 'Zacetek'
 
 class Igra:
 
-    def __init__(self):
-        self.igralec = 0
-        self.racunalnik = 0
+    def __init__(self, igralec=0, racunalnik=0):
+        self.igralec = igralec
+        self.racunalnik = racunalnik
 
     def tocka_za_igralca(self):
         self.igralec += 1
@@ -119,10 +122,10 @@ class KamenSkarjePapirOgenjVoda(Igra):
             pass
         
 def nova_igra():
-    return KamenSkarjePapir()
+    return KamenSkarjePapir(igralec=0, racunalnik=0)
 
 def nova_igra_1():
-    return KamenSkarjePapirOgenjVoda()
+    return KamenSkarjePapirOgenjVoda(igralec=0, racunalnik=0)
 
 class Datoteka:
 
@@ -138,20 +141,80 @@ class Datoteka:
 class KSP(Datoteka):
 
     def nova_igra(self):
+        self.preberi_iz_datoteke()
         nov_id = self.prosti_id_igre()
         sveza_igra = nova_igra()
             
-        self.igre[nov_id] = (sveza_igra, ZACETNO_STANJE)
+        self.igre[nov_id] = (sveza_igra, ZACETEK)
+        self.shrani_v_datoteko()
         return nov_id
+
+    def potek_igre(self, id_igre, orozje):
+        self.preberi_iz_datoteke()
+        trenutna_igra, _ = self.igre[id_igre]
+
+        novo_orozje = trenutna_igra.potek_igre(orozje)
+        self.igre[id_igre] = (trenutna_igra, novo_orozje)
+
+        self.shrani_v_datoteko()
+
+    def shrani_v_datoteko(self):
+        igre = {}
+        for id_igre, (igra, orozje_igralca) in self.igre.items():
+            igre[id_igre] = ((igra.igralec, igra.racunalnik), orozje_igralca)
+        
+        with open(DATOTEKA_KSP, "W") as izhodna:
+            json.dump(igre, izhodna)
+
+    def preberi_iz_datoteke(self):
+        with open(DATOTEKA_KSP) as vhodna:
+            igre = json.load(vhodna)
+
+        self.igre = {}
+        for id_igre, (igralec, racunalnik) in igre.items():
+            self.igre[int(id_igre)] = KamenSkarjePapir(igralec, racunalnik), orozje_igralca
+        
+            
+
 
 class KSPOV(Datoteka):
 
     def nova_igra_1(self):
+        self.preberi_iz_datoteke()
         nov_id = self.prosti_id_igre()
         sveza_igra = nova_igra_1()
 
-        self.igre[nov_id] = (sveza_igra, ZACETNO_STANJE)
+        self.igre[nov_id] = sveza_igra
+        self.shrani_v_datoteko()
         return nov_id
+
+    def potek_igre(self, id_igre, orozje):
+        self.preberi_iz_datoteke()
+        trenutna_igra, _ = self.igre[id_igre]
+
+        novo_orozje = trenutna_igra.potek_igre(orozje)
+        self.igre[id_igre] = (trenutna_igra, novo_orozje)
+
+        self.shrani_v_datoteko()
+
+
+    def shrani_v_datoteko(self):
+        igre = {}
+        for id_igre, (igra, orozje_igralca) in self.igre.items():
+            igre[id_igre] = ((igra.igralec, igra.racunalnik), orozje_igralca)
+
+        with open(DATOTEKA_KSPOV, "W") as izhodna:
+            json.dump(igre, izhodna)
+
+    def preberi_iz_datoteke(self):
+        with open(DATOTEKA_KSPOV) as vhodna:
+            igre = json.load(vhodna)
+
+        self.igre = {}
+        for id_igre, (igralec, racunalnik) in igre.items():
+            self.igre[int(id_igre)] = KamenSkarjePapirOgenjVoda(igralec, racunalnik), orozje_igralca
+
+#pomembno je da beležim rezultat igre in sicer to lahko shranim v datoteko kot {id_igre: [igralec, racunalnik]
 
 
         
