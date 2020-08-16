@@ -10,12 +10,13 @@
 
 <h2>REZULTAT: {{igra.delni_izid_igralca()}} : {{igra.delni_izid_racunalnika()</h2>
 
-% if ksp.zmaga_igralca() == True:
+% if igra.zmaga_igralca() == True:
     <h1>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM: {{igra.koncni_izid_igralca()}} : {{igra.koncni_izid_racunalnika()}}</h1>
 % else:
     <h1>IZGUBIL SI PROTI RAČUNALNIKU Z IZIDOM: {{igra.koncni_izid_racunalnika()}} : {{igra.koncni_izid_igralca()}}</h1>
 %end
 
+%while igra.konec_igre() == False:
 <form action="/ksp/" method="POST">
     Kamen
     <input type="radio" name="orozje" value="0">
@@ -26,4 +27,5 @@
     
     <button type="submit">Potrdi</button>
 </form>
+%end
 
