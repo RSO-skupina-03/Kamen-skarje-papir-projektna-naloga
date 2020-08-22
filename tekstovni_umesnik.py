@@ -33,9 +33,12 @@ def racunalnik(niz):
     return f'\033[1;91m{niz}\033[0m'
 
 def orozje_igralca():
-    izbira = input('> ')
-    prava_izbira = int(izbira) - 1
-    return prava_izbira
+    try:
+        izbira = input('> ')
+        prava_izbira = int(izbira) - 1
+        return prava_izbira
+    except ValueError:
+            print('Prosim vnesite številko pred orožjem')
 
 def zacetni_menu():
     while True:

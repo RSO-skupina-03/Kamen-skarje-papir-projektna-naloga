@@ -59,6 +59,9 @@ class KamenSkarjePapir(Igra):
     
     def zmaga_igralca(self):
         return self.igralec > self.racunalnik and self.konec_igre() == True
+    
+    def zmaga_racunalnika(self):
+        return self.igralec < self.racunalnik and self.konec_igre() == True
 
     def koncni_izid_racunalnika(self):
         if self.konec_igre() == True:
@@ -105,6 +108,9 @@ class KamenSkarjePapirOgenjVoda(Igra):
     
     def zmaga_igralca_1(self):
         return self.igralec > self.racunalnik and self.konec_igre_1() == True
+    
+    def zmaga_racunalnika_1(self):
+        return self.igralec < self.racunalnik and self.konec_igre_1() == True
 
     def konec_igre_1(self):
         return self.racunalnik + self.igralec == 15
@@ -166,7 +172,7 @@ class KSP(Datoteka):
             igre[id_igre] = (igra.igralec, igra.racunalnik)
         
         with open(DATOTEKA_KSP, 'w') as izhodna:
-            json.dump(igre, izhodna, ensure_ascii=False)
+            json.dump(igre, izhodna, ensure_ascii=False, indent=2)
 
     def preberi_iz_datoteke(self):
         with open(DATOTEKA_KSP) as vhodna:
@@ -203,7 +209,7 @@ class KSPOV(Datoteka):
             igre[id_igre] = (igra.igralec, igra.racunalnik)
 
         with open(DATOTEKA_KSPOV, 'w') as izhodna:
-            json.dump(igre, izhodna, ensure_ascii=False)
+            json.dump(igre, izhodna, ensure_ascii=False, indent=2)
 
     def preberi_iz_datoteke(self):
         with open(DATOTEKA_KSPOV) as vhodna:
