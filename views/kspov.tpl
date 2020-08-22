@@ -8,16 +8,10 @@
     Igralo se bo minimalno 14 iger 
 </BLOckquote>
 
-<h2>REZULTAT: {{igra.delni_izid_igralca_1()}} : {{igra.delni_izid_racunalnika_1()</h2>
+<h2>REZULTAT: {{igra.delni_izid_igralca()}} : {{igra.delni_izid_racunalnika()}}</h2>
 
-% if igra.zmaga_igralca_1() == True:
-    <h1>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM: {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</h1>
-% else:
-    <h1>IZGUBIL SI PROTI RAČUNALNIKU Z IZIDOM: {{igra.koncni_izid_racunalnika_1()}} : {{igra.koncni_izid_igralca_1()}}</h1>
-%end
 
-%while igra.konec_igre_1() == False:
-<form action="/ksp/" method="POST">
+<form action="/kspov/" method="POST">
     Kamen
     <input type="radio" name="orozje" value="0">
     Škarje
@@ -31,4 +25,20 @@
     
     <input type="submit" value="Potrdi">
 </form>
+
+% if igra.zmaga_igralca_1() == True:
+    <h1>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</h1>
+    <form action="/" method="GET">
+        <button type="submit">ZACETNI MENI</button>
+    </form>
 %end
+
+% if igra.zmaga_racunalnika_1() == True:
+    <h1>IZGUBIL SI PROTI RAČUNALNIKU Z IZIDOM {{igra.koncni_izid_racunalnika_1()}} : {{igra.koncni_izid_igralca_1()}}</h1>
+    <form action="/" method="GET">
+        <button type="submit">ZACETNI MENI</button>
+    </form>
+%end
+
+
+

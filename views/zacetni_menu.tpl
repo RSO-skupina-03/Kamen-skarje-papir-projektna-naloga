@@ -1,13 +1,13 @@
-
 %rebase('views/base.tpl')
+<div>
+    <form action="/nova_igra_ksp/" method="POST">
+        <button type="submit" class="gumb">KŠP</button>
+    </form>
 
-<h1>DOBRODOŠLI</h1>
+    <form action="/nova_igra_kspov/" method="POST">
+        <button type="submit" class="gumb">KŠPOV</button>
+    </form>
+</div>
 
-<form action="/nova_igra_ksp/" method="POST">
-    <button type="submit">KŠP</button>
-</form>
 
-<form action="/nova_igra_kspov/" method="POST">
-    <button type="submit">KŠPoc</button>
-</form>
 
