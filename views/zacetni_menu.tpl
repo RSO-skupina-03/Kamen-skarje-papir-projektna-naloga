@@ -1,4 +1,8 @@
 %rebase('views/base.tpl')
+<div class="pozdrav">
+    <h2>DOBRODOŠLI IZBERITE SI IGRO </h2>
+</div>
+
 <div>
     <form action="/nova_igra_ksp/" method="POST">
         <button type="submit" class="gumb">KŠP</button>
