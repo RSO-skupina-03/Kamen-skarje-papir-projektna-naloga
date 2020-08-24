@@ -7,6 +7,16 @@ STARI_SLOVENSKI_PREGOVOR = "Kdor drugemu luknjo koplje, sam vanjo pade"
 ksp = model.KSP()
 kspov = model.KSPOV()
 
+ksp.preberi_iz_datoteke()
+kspov.preberi_iz_datoteke()
+
+@bottle.error(404)
+def error404(error):
+    return bottle.template('views/error.tpl')
+    
+@bottle.error(500)
+def error500(error):
+    return bottle.template('views/error.tpl')
 
 @bottle.get('/')
 def zacetni_menu():
