@@ -14,7 +14,7 @@
 </div>
 
 <div class="radio">
-    <form action="/ksp/" method="POST">
+    <form action="/kspov/" method="POST">
         <input type="radio" name="orozje" value="0" id="kamen">
         <label for="kamen">KAMEN</label>
 
