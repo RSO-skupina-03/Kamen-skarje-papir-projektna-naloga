@@ -32,6 +32,7 @@ def igralec(niz):
 def racunalnik(niz):
     return f'\033[1;91m{niz}\033[0m'
 
+
 def orozje_igralca():
     try:
         izbira = input('> ')
@@ -39,6 +40,8 @@ def orozje_igralca():
         return prava_izbira
     except ValueError:
             print('Prosim vnesite številko pred orožjem')
+
+#============================================================================================================================================
 
 def zacetni_menu():
     while True:
@@ -64,6 +67,8 @@ def zacetni_menu():
         else:
             print('Vpišite številko 1, 2 ali 3')
 
+#==================================================================================================================================================
+
 def kamen_skarje_papir(ksp):
 
     print('''
@@ -84,6 +89,8 @@ def kamen_skarje_papir(ksp):
         else:
             print('Vpišite številko pred orožjem')
     print(poraz_ali_zmaga(ksp))
+
+#========================================================================================================================================================
 
 def kamen_skarje_papir_ogenj_voda(kspov):
     print('''
@@ -106,6 +113,8 @@ def kamen_skarje_papir_ogenj_voda(kspov):
         else:
             print('Vpišite ime orožja ali pa številko pred orožjem')
     print(poraz_ali_zmaga_1(kspov))
+
+#==========================================================================================================================================================
 
 zacetni_menu()
 

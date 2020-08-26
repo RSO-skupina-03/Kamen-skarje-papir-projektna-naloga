@@ -25,10 +25,12 @@ class Igra:
     def delni_izid_racunalnika(self):
         return self.racunalnik
 
+#============================================================================================================================================================
+
 class KamenSkarjePapir(Igra):
 
     def potek_igre(self, izbrano_orozje):
-    # Sprememba!!! igra se do 7 iger in se bo potem določilo zmagovalca
+    #igra se do 7 iger in se bo potem določilo zmagovalca
             slovar_izbir = {'Kamen': 0, 'Škarje': 1, 'Papir': 2}
 
             igralec = slovar_izbir.get(MOZNOSTI[izbrano_orozje])
@@ -74,6 +76,8 @@ class KamenSkarjePapir(Igra):
             return self.igralec
         else:
             pass
+
+#=========================================================================================================================================================
 
 class KamenSkarjePapirOgenjVoda(Igra):
 
@@ -126,13 +130,16 @@ class KamenSkarjePapirOgenjVoda(Igra):
             return self.igralec
         else:
             pass
+
+#=========================================================================================================================================================
         
 def nova_igra():
     return KamenSkarjePapir(igralec=0, racunalnik=0)
 
 def nova_igra_1():
     return KamenSkarjePapirOgenjVoda(igralec=0, racunalnik=0)
-    
+
+#=========================================================================================================================================================
 
 class Datoteka:
 
@@ -145,7 +152,8 @@ class Datoteka:
         else:
             return len(self.igre) + 1
 
-            
+#============================================================================================================================================================
+   
 class KSP(Datoteka):
 
     def nova_igra(self):
@@ -182,6 +190,7 @@ class KSP(Datoteka):
         for id_igre, (igralec, racunalnik) in igre.items():
             self.igre[int(id_igre)] = KamenSkarjePapir(igralec, racunalnik)
 
+#=========================================================================================================================================================
 
 class KSPOV(Datoteka):
 
