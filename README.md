@@ -1,5 +1,3 @@
-# Kamen-skarje-papir-projektna-naloga
-Projektna naloga pri predmetu UVP
 
 ## KAMEN ŠKARJE PAPIR
 Za projektno nalogo sem naredil igro kamen škarje papir (KŠP) in igro kamen škarje papir ogenj voda (KŠPOV).
