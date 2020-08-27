@@ -48,7 +48,7 @@ def zacetni_menu():
 
         print('''IZBERI SI IGRO:
         1: Kamen škarje papir (minimalno 7 iger)
-        2: Kamnen škraje papir ogenj voda (minimalno 15 iger)
+        2: Kamen škraje papir ogenj voda (minimalno 15 iger)
         3: Zaključil sem z igranjem''')
 
         print()

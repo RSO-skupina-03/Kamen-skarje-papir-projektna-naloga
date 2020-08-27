@@ -4,8 +4,8 @@
 <h3>KAMEN ŠKARJE PAPIR OGENJ VODA</h3>
 
 <BLOckquote>
-    Dobrodošli v igri Kamen Škarje Papir. Igrali boste proti računalniku.
-    Igralo se bo minimalno 7 iger.
+    Dobrodošli v igri kamen škarje papir ogenj voda. Igrali boste proti računalniku.
+    Igrali boste minimalno 15 iger.
     Igra se točkuje: igralec : računalnik
 </BLOckquote>
 
@@ -54,7 +54,7 @@
         <div class="glava poraz">
             <h2>PORAZ</h2>
         </div>
-        <P>IZGUBIL SI PROTI RAČUBALNIKU Z IZIDOM {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</P>
+        <P>IZGUBIL SI PROTI RAČUNALNIKU Z IZIDOM {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</P>
         <form action="/" method="GET">
             <button type="submit" class="zacetni">ZACETNI MENI</button>
         </form>
