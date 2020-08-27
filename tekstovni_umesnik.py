@@ -47,9 +47,13 @@ def zacetni_menu():
     while True:
 
         print('''IZBERI SI IGRO:
-        1: Kamen škarje papir (igraš proti računalniku minimalno 7 iger)
-        2: Kamnen škraje papir ogenj voda (bolj atraktivna različica kjer se igra minimalno 14 iger)
+        1: Kamen škarje papir (minimalno 7 iger)
+        2: Kamnen škraje papir ogenj voda (minimalno 15 iger)
         3: Zaključil sem z igranjem''')
+
+        print()
+        print('Rezultat se točkuje:', igralec('igralec'), ':', racunalnik('računalnik'))
+        print()
 
         izbira = input('VPIŠITE IZBIRO: ')
 
@@ -77,6 +81,8 @@ def kamen_skarje_papir(ksp):
     2: Škarje
     3: Papir
         ''')
+    
+    print()
 
     while ksp.konec_igre() == False:
         print(delni_rezultat(ksp))
@@ -88,7 +94,10 @@ def kamen_skarje_papir(ksp):
             ksp.potek_igre(prava_izbira)
         else:
             print('Vpišite številko pred orožjem')
+
+    print()
     print(poraz_ali_zmaga(ksp))
+    print()
 
 #========================================================================================================================================================
 
@@ -102,6 +111,8 @@ def kamen_skarje_papir_ogenj_voda(kspov):
     4: Ogenj
     5: Voda''')
 
+    print()
+
     while kspov.konec_igre_1() == False:
         print(delni_rezultat(kspov))
 
@@ -112,7 +123,10 @@ def kamen_skarje_papir_ogenj_voda(kspov):
             kspov.potek_igre_1(prava_izbira)
         else:
             print('Vpišite ime orožja ali pa številko pred orožjem')
+
+    print()
     print(poraz_ali_zmaga_1(kspov))
+    print()
 
 #==========================================================================================================================================================
 
