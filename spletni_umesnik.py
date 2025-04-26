@@ -66,7 +66,7 @@ def izbira_igralca_kspov():
     kspov.potek_igre_1(id_igre, orozje)
     bottle.redirect(f"/kspov/")
 
-bottle.run(debug=True, reloader=True)
+app = bottle.default_app()
 
 
 
