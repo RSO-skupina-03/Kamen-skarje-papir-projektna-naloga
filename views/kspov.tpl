@@ -41,7 +41,7 @@
             <h2>ZMAGA</h2>
         </div>
         <P>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</P>
-        <form action="/" method="GET">
+        <form action="/end/" method="GET">
             <button type="submit" class="zacetni">ZACETNI MENI</button>
         </form>
     </div>
@@ -55,7 +55,7 @@
             <h2>PORAZ</h2>
         </div>
         <P>IZGUBIL SI PROTI RAČUNALNIKU Z IZIDOM {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</P>
-        <form action="/" method="GET">
+        <form action="/end/" method="GET">
             <button type="submit" class="zacetni">ZACETNI MENI</button>
         </form>
     </div>

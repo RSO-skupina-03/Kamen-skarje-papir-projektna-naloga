@@ -20,7 +20,19 @@ def error500(error):
 
 @bottle.get('/')
 def zacetni_menu():
+    return bottle.template('views/log.tpl')
+
+@bottle.get('/end/')
+def zacetni_menu():
     return bottle.template('views/zacetni_menu.tpl')
+
+@bottle.post("/zacetni_menu/")
+def prijava():
+    uporabnik = bottle.request.forms.get("uporabnik")
+    geslo = bottle.request.forms.get("geslo")
+    # tukaj shraniš uporabnika v sejo/cookie itd., če hočeš
+    # zaenkrat lahko samo redirect na igro ali pozdrav
+    return bottle.template("views/zacetni_menu.tpl")
 
 #================================================================================================================================================
 
