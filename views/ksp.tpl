@@ -12,7 +12,7 @@
 
 
 <div class="radio">
-    <form action="/ksp/" method="POST">
+    <form action="/ksp/" method="POST" class="obrazec">
         <input type="radio" name="orozje" value="0" id="kamen">
         <label for="kamen">KAMEN</label>
 
@@ -22,7 +22,10 @@
         <input type="radio" name="orozje" value="2" id="papir">
         <label for="papir">PAPIR</label>
 
-        <button type="submit" class="potrdi">Potrdi</button>
+        <div class="gumbi">
+            <button type="submit" class="potrdi">Potrdi</button>
+            <button type="button" class="potrdi" onclick="window.location.href='/end/'">Zgodovina</button>
+        </div>
     </form>
 </div>
 

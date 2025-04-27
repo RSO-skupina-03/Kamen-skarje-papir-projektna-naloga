@@ -30,7 +30,10 @@
         <input type="radio" name="orozje" value="4" id="voda">
         <label for="voda">VODA</label>
 
-        <button type="submit" class="potrdi">Potrdi</button>
+        <div class="gumbi">
+            <button type="submit" class="potrdi">Potrdi</button>
+            <button type="button" class="potrdi" onclick="window.location.href='/end/'">Zgodovina</button>
+        </div>
     </form>
 </div>
 

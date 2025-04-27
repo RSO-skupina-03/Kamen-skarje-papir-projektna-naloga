@@ -166,6 +166,7 @@ input[type="radio"]:checked + label
 .potrdi
 {
     position: relative;
+    margin: 10px 0px;
     top: 120px;
     left: 350px;
     border: 2px soild black;
@@ -175,6 +176,14 @@ input[type="radio"]:checked + label
     border-radius: 5px;
     background:rgba(112, 103, 103, 0.7);
     color: black;
+}
+.gumbi 
+{
+    display: flex; /* da gumbi gredo VODORAVNO */
+    justify-content: center; /* poravnani na sredino */
+    margin-top: 20px;
+    margin-right: -210px;
+    gap: 50px;
 }
 
 .rezultat1
@@ -186,10 +195,18 @@ input[type="radio"]:checked + label
 
 .pozdrav
 {
-    position: relative;
-    bottom: 20px;
-    font-size: medium;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
 }
+
+.pozdrav button
+{
+    width: 100%;
+    margin: 60px 0px; 
+}
+
 
 h3
 {
@@ -262,7 +279,7 @@ h3
     background:rgba(112, 103, 103, 0.7);
     color: black;
     font-weight: 500;
-}
+}    
     </style>
 </head>
 <body>
