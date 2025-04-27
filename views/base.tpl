@@ -274,5 +274,39 @@ h3
     </div>
 
     <!-- Tukaj dodamo še javascript-->
+    <script>
+        document.getElementById("prijava").addEventListener("click", function() {
+            event.preventDefault(); // preprečimo običajno pošiljanje obrazca
+            
+            var user = document.getElementById("uporabnik").value;
+            
+            // Pošlji PUT zahtevo z uporabo fetch API
+            fetch("/zacetni_menu/", {
+                method: "PUT", 
+                body: JSON.stringify({ uporabnik: user }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // Preusmeritev na novo stran
+                }
+            })
+            .catch(error => console.error("Napaka:", error));
+        });
+
+        document.getElementById("gostBtn").addEventListener("click", function() {
+            fetch("/zacetni_menu/", {
+                method: "PUT", 
+                body: JSON.stringify({ uporabnik: "Gost" }),
+                headers: { "Content-Type": "application/json" }
+            })
+            .then(response => {
+                if (response.redirected) {
+                    window.location.href = response.url; // Preusmeritev na novo stran
+                }
+            })
+            .catch(error => console.error("Napaka:", error));
+        });
+    </script>
 </body>
 </html>

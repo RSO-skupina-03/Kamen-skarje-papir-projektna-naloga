@@ -10,10 +10,9 @@ ZACETEK = 'Zacetek'
 
 class Igra:
 
-    def __init__(self, igralec=0, racunalnik=0, uporabnik=None):
+    def __init__(self, igralec=0, racunalnik=0):
         self.igralec = igralec
         self.racunalnik = racunalnik
-        self.uporabnik = uporabnik
 
     def tocka_za_igralca(self):
         self.igralec += 1
@@ -145,9 +144,12 @@ def nova_igra_1():
 
 class Datoteka:
 
-    def __init__(self, uporabnik):
-        self.uporabnik = uporabnik
+    def __init__(self):
         self.igre = {}
+        self.uporabnik = ""
+
+    def nastavi_uporabnika(self, uporabnik):
+        self.uporabnik = uporabnik
 
     def prosti_id_igre(self):
         if len(self.igre) == 0:
@@ -177,40 +179,40 @@ class KSP(Datoteka):
 
         self.shrani_v_datoteko()
 
-def shrani_v_datoteko(self):
-    # Preberi obstoječe podatke
-    if os.path.exists(DATOTEKA_KSP) and os.stat(DATOTEKA_KSP).st_size > 0:
-        with open(DATOTEKA_KSP, "r", encoding="utf-8") as izhodna:
-            vsi_uporabniki = json.load(izhodna)
-    else:
-        vsi_uporabniki = {}
+    def shrani_v_datoteko(self):
+        # Preberi obstoječe podatke
+        if os.path.exists(DATOTEKA_KSP) and os.stat(DATOTEKA_KSP).st_size > 0:
+            with open(DATOTEKA_KSP, "r", encoding="utf-8") as izhodna:
+                vsi_uporabniki = json.load(izhodna)
+        else:
+            vsi_uporabniki = {}
 
-    # Shranimo igre za trenutnega uporabnika
-    vsi_uporabniki[self.uporabnik] = {
-        id_igre: (igra.igralec, igra.racunalnik) for id_igre, igra in self.igre.items()
-    }
-
-    with open(DATOTEKA_KSP, "w", encoding="utf-8") as izhodna:
-        json.dump(vsi_uporabniki, izhodna, ensure_ascii=False, indent=2)
-
-
-def preberi_iz_datoteke(self):
-    if not os.path.exists(DATOTEKA_KSP) or os.stat(DATOTEKA_KSP).st_size == 0:
-        self.igre = {}
-        return
-
-    with open(DATOTEKA_KSP, "r", encoding="utf-8") as vhodna:
-        vsi_uporabniki = json.load(vhodna)
-
-    # Preberi samo igre za prijavljenega uporabnika
-    if self.uporabnik in vsi_uporabniki:
-        igre = vsi_uporabniki[self.uporabnik]
-        self.igre = {
-            int(id_igre): KamenSkarjePapir(igralec, racunalnik)
-            for id_igre, (igralec, racunalnik) in igre.items()
+        # Shranimo igre za trenutnega uporabnika
+        vsi_uporabniki[self.uporabnik] = {
+            id_igre: (igra.igralec, igra.racunalnik) for id_igre, igra in self.igre.items()
         }
-    else:
-        self.igre = {}
+
+        with open(DATOTEKA_KSP, "w", encoding="utf-8") as izhodna:
+            json.dump(vsi_uporabniki, izhodna, ensure_ascii=False, indent=2)
+
+
+    def preberi_iz_datoteke(self):
+        if not os.path.exists(DATOTEKA_KSP) or os.stat(DATOTEKA_KSP).st_size == 0:
+            self.igre = {}
+            return
+
+        with open(DATOTEKA_KSP, "r", encoding="utf-8") as vhodna:
+            vsi_uporabniki = json.load(vhodna)
+
+        # Preberi samo igre za prijavljenega uporabnika
+        if self.uporabnik in vsi_uporabniki:
+            igre = vsi_uporabniki[self.uporabnik]
+            self.igre = {
+                int(id_igre): KamenSkarjePapir(igralec, racunalnik)
+                for id_igre, (igralec, racunalnik) in igre.items()
+            }
+        else:
+            self.igre = {}
 #=========================================================================================================================================================
 
 class KSPOV(Datoteka):
@@ -234,39 +236,39 @@ class KSPOV(Datoteka):
         self.shrani_v_datoteko()
 
 
-def shrani_v_datoteko(self):
-    # Preberi obstoječe podatke
-    if os.path.exists(DATOTEKA_KSPOV) and os.stat(DATOTEKA_KSPOV).st_size > 0:
-        with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as izhodna:
-            vsi_uporabniki = json.load(izhodna)
-    else:
-        vsi_uporabniki = {}
+    def shrani_v_datoteko(self):
+        # Preberi obstoječe podatke
+        if os.path.exists(DATOTEKA_KSPOV) and os.stat(DATOTEKA_KSPOV).st_size > 0:
+            with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as izhodna:
+                vsi_uporabniki = json.load(izhodna)
+        else:
+            vsi_uporabniki = {}
 
-    # Shranimo igre za trenutnega uporabnika
-    vsi_uporabniki[self.uporabnik] = {
-        id_igre: (igra.igralec, igra.racunalnik) for id_igre, igra in self.igre.items()
-    }
-
-    with open(DATOTEKA_KSPOV, "w", encoding="utf-8") as izhodna:
-        json.dump(vsi_uporabniki, izhodna, ensure_ascii=False, indent=2)
-
-
-def preberi_iz_datoteke(self):
-    if not os.path.exists(DATOTEKA_KSPOV) or os.stat(DATOTEKA_KSPOV).st_size == 0:
-        self.igre = {}
-        return
-
-    with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as vhodna:
-        vsi_uporabniki = json.load(vhodna)
-
-    if self.uporabnik in vsi_uporabniki:
-        igre = vsi_uporabniki[self.uporabnik]
-        self.igre = {
-            int(id_igre): KamenSkarjePapirOgenjVoda(igralec, racunalnik)
-            for id_igre, (igralec, racunalnik) in igre.items()
+        # Shranimo igre za trenutnega uporabnika
+        vsi_uporabniki[self.uporabnik] = {
+            id_igre: (igra.igralec, igra.racunalnik) for id_igre, igra in self.igre.items()
         }
-    else:
-        self.igre = {}
+
+        with open(DATOTEKA_KSPOV, "w", encoding="utf-8") as izhodna:
+            json.dump(vsi_uporabniki, izhodna, ensure_ascii=False, indent=2)
+
+
+    def preberi_iz_datoteke(self):
+        if not os.path.exists(DATOTEKA_KSPOV) or os.stat(DATOTEKA_KSPOV).st_size == 0:
+            self.igre = {}
+            return
+
+        with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as vhodna:
+            vsi_uporabniki = json.load(vhodna)
+
+        if self.uporabnik in vsi_uporabniki:
+            igre = vsi_uporabniki[self.uporabnik]
+            self.igre = {
+                int(id_igre): KamenSkarjePapirOgenjVoda(igralec, racunalnik)
+                for id_igre, (igralec, racunalnik) in igre.items()
+            }
+        else:
+            self.igre = {}
 
 #pomembno je da beležim rezultat igre in sicer to lahko shranim v datoteko kot {id_igre: [igralec, racunalnik]
 

@@ -7,9 +7,6 @@ STARI_SLOVENSKI_PREGOVOR = "Kdor drugemu luknjo koplje, sam vanjo pade"
 ksp = model.KSP()
 kspov = model.KSPOV()
 
-ksp.preberi_iz_datoteke()
-kspov.preberi_iz_datoteke()
-
 @bottle.error(404)
 def error404(error):
     return bottle.template('views/error.tpl')
@@ -26,13 +23,22 @@ def zacetni_menu():
 def zacetni_menu():
     return bottle.template('views/zacetni_menu.tpl')
 
-@bottle.post("/zacetni_menu/")
+@bottle.put("/zacetni_menu/")
 def prijava():
-    uporabnik = bottle.request.forms.get("uporabnik")
-    geslo = bottle.request.forms.get("geslo")
+    uporabnik = bottle.request.json.get("uporabnik")
+
+    if uporabnik == "Gost" or uporabnik == "":
+        ksp.nastavi_uporabnika("Gost")
+        kspov.nastavi_uporabnika("Gost")
+    else:
+        ksp.nastavi_uporabnika(uporabnik)
+        kspov.nastavi_uporabnika(uporabnik)
+
+    ksp.preberi_iz_datoteke()
+    kspov.preberi_iz_datoteke()
     # tukaj shraniš uporabnika v sejo/cookie itd., če hočeš
     # zaenkrat lahko samo redirect na igro ali pozdrav
-    return bottle.template("views/zacetni_menu.tpl")
+    return  bottle.redirect(f"/end/")
 
 #================================================================================================================================================
 
