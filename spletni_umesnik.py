@@ -15,6 +15,10 @@ def error404(error):
 def error500(error):
     return bottle.template('views/error.tpl')
 
+@bottle.route('/static/<filepath:path>')
+def server_static(filepath):
+    return bottle.static_file(filepath, root='static')
+
 @bottle.get('/')
 def zacetni_menu():
     return bottle.template('views/log.tpl')
@@ -62,6 +66,18 @@ def izbira_igralca_ksp():
     ksp.potek_igre(id_igre, orozje)
     bottle.redirect(f"/ksp/")
 
+@bottle.get("/zgodovina_ksp/")
+def prikazi_zgodovino():
+    ksp.preberi_iz_datoteke()
+    igre = ksp.igre
+
+    seznam_iger = []
+    for id_igre, igra in igre.items():
+        opis = f"ID {id_igre}: igralec - {igra.igralec}, računalnik - {igra.racunalnik}"
+        seznam_iger.append(opis)
+        
+    return bottle.template("views/zgodovina.tpl", igre=seznam_iger)
+
 #====================================================================================================================================================
 
 @bottle.post("/nova_igra_kspov/")
@@ -83,6 +99,18 @@ def izbira_igralca_kspov():
     orozje = int(bottle.request.forms["orozje"])
     kspov.potek_igre_1(id_igre, orozje)
     bottle.redirect(f"/kspov/")
+
+@bottle.get("/zgodovina_kspov/")
+def prikazi_zgodovino():
+    kspov.preberi_iz_datoteke()
+    igre = kspov.igre
+
+    seznam_iger = []
+    for id_igre, igra in igre.items():
+        opis = f"ID {id_igre}: igralec - {igra.igralec}, računalnik - {igra.racunalnik}"
+        seznam_iger.append(opis)
+        
+    return bottle.template("views/zgodovina.tpl", igre=seznam_iger)
 
 app = bottle.default_app()
 

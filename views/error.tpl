@@ -2,6 +2,6 @@
 
 <h1>PRIŠLO JE DO NAPAKE!!!</h1>
 
-<form action="/" method="GET">
-    <button type="submit" class="zacetni">ZACETNI MENI</button>
-</form>
+<div class="back">
+    <button type="button" class="zacetni" onclick="window.location.href='/end/'">ZAČETNI MENI</button>
+</div>

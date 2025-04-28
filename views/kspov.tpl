@@ -32,7 +32,7 @@
 
         <div class="gumbi">
             <button type="submit" class="potrdi">Potrdi</button>
-            <button type="button" class="potrdi" onclick="window.location.href='/end/'">Zgodovina</button>
+            <button type="button" class="potrdi" onclick="window.location.href='/zgodovina_kspov/'">Zgodovina</button>
         </div>
     </form>
 </div>
