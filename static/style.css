@@ -213,10 +213,18 @@ input[type="radio"]:checked + label
     display: flex;
     justify-content: center;
     margin-top: 20px;
-    margin-right: -210px;
-    gap: 50px;
+    margin-right: -450px;
+    gap: 20px;
 }
 
+.ksp
+{
+    display: flex;
+    justify-content: center;
+    margin-top: 200px;
+    margin-right: -450px;
+    gap: 20px;
+}
 .rezultat1
 {
     position: relative;

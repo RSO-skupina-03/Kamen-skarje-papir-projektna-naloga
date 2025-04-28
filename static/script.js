@@ -30,31 +30,27 @@ function Gost() {
 }
 
 function BrisiKSP() {
-    fetch('/izbrisi_igre/', {
-        method: 'DELETE'
+    fetch('/brisi_ksp/', {
+        method: 'DELETE',
+        headers: { "Content-Type": "application/json" }
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Odgovor strežnika:', data);
-        alert('Vse igre so bile uspešno izbrisane!');
-        window.location.href = "/end/"; // Preusmeri nazaj na začetni meni
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+        }
     })
-    .catch(error => {
-        console.error('Napaka:', error);
-    });
+    .catch(error => console.error("Napaka:", error));
 }
 
 function BrisiKSPOV() {
-    fetch('/izbrisi_igre/', {
-        method: 'DELETE'
+    fetch('/brisi_kspov/', {
+        method: 'DELETE',
+        headers: { "Content-Type": "application/json" }
     })
-    .then(response => response.json())
-    .then(data => {
-        console.log('Odgovor strežnika:', data);
-        alert('Vse igre so bile uspešno izbrisane!');
-        window.location.href = "/end/"; // Preusmeri nazaj na začetni meni
+    .then(response => {
+        if (response.redirected) {
+            window.location.href = response.url;
+        }
     })
-    .catch(error => {
-        console.error('Napaka:', error);
-    });
+    .catch(error => console.error("Napaka:", error));
 }

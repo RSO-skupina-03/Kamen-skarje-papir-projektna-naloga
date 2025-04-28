@@ -33,6 +33,7 @@
         <div class="gumbi">
             <button type="submit" class="potrdi">Potrdi</button>
             <button type="button" class="potrdi" onclick="window.location.href='/zgodovina_kspov/'">Zgodovina</button>
+            <button type="button" class="potrdi" onclick="window.location.href='/end/'">Nazaj</button>
         </div>
     </form>
 </div>
@@ -44,8 +45,8 @@
             <h2>ZMAGA</h2>
         </div>
         <P>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</P>
-        <form action="/end/" method="GET">
-            <button type="submit" class="zacetni">ZACETNI MENI</button>
+        <form action="/nova_igra_kspov/" method="GET">
+            <button type="submit" class="zacetni">STAY HARD !!!</button>
         </form>
     </div>
 </div>
@@ -58,8 +59,8 @@
             <h2>PORAZ</h2>
         </div>
         <P>IZGUBIL SI PROTI RAČUNALNIKU Z IZIDOM {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</P>
-        <form action="/end/" method="GET">
-            <button type="submit" class="zacetni">ZACETNI MENI</button>
+        <form action="/nova_igra_kspov/" method="GET">
+            <button type="submit" class="zacetni">BAD LUCK</button>
         </form>
     </div>
 </div>

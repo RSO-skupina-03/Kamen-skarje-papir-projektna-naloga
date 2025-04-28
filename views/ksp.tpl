@@ -22,9 +22,10 @@
         <input type="radio" name="orozje" value="2" id="papir">
         <label for="papir">PAPIR</label>
 
-        <div class="gumbi">
+        <div class="ksp">
             <button type="submit" class="potrdi">Potrdi</button>
             <button type="button" class="potrdi" onclick="window.location.href='/zgodovina_ksp/'">Zgodovina</button>
+            <button type="button" class="potrdi" onclick="window.location.href='/end/'">Nazaj</button>
         </div>
     </form>
 </div>
@@ -36,8 +37,8 @@
             <h2>ZMAGA</h2>
         </div>
         <P>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM {{igra.koncni_izid_igralca()}} : {{igra.koncni_izid_racunalnika()}}</P>
-        <form action="/end/" method="GET">
-            <button type="submit" class="zacetni">ZACETNI MENI</button>
+        <form action="/nova_igra_ksp/" method="GET">
+            <button type="submit" class="zacetni">STAY HARD !!!</button>
         </form>
     </div>
 </div>
@@ -51,8 +52,8 @@
             <h2>PORAZ</h2>
         </div>
         <P>IZGUBIL SI PROTI RAČUNALNIKU Z IZIDOM {{igra.koncni_izid_igralca()}} : {{igra.koncni_izid_racunalnika()}}</P>
-        <form action="/end/" method="GET">
-            <button type="submit" class="zacetni">ZACETNI MENI</button>
+        <form action="/nova_igra_ksp/" method="GET">
+            <button type="submit" class="zacetni">BAD LUCK</button>
         </form>
     </div>
 </div>
