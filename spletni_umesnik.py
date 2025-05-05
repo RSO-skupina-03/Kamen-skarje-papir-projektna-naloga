@@ -2,6 +2,7 @@ import os
 import json
 import model
 import bottle
+from bottle import request, redirect, response
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from hypercorn.middleware import AsyncioWSGIMiddleware
@@ -41,6 +42,7 @@ def zacetni_menu():
 @bottle.put("/zacetni_menu/")
 def prijava():
     uporabnik = bottle.request.json.get("uporabnik")
+    password = bottle.request.json.get("password")
     if uporabnik == "Gost" or uporabnik == "":
         uporabnik = "Gost"
     
@@ -207,4 +209,21 @@ def zgodovina_xml():
     return ET.tostring(root, encoding="unicode")
 
 app = bottle.default_app()
+
+# @app.hook('before_request')
+# def enforce_https():
+    # Če pride neprenjujen klic po http://
+    # if request.urlparts.scheme != 'https':
+        # secure = request.urlparts._replace(scheme='https').geturl()
+        # return redirect(secure, code=301)
+# Ves promet se preumseri na https 303 ali 302 redirect
+
+# @app.hook('after_request')
+# def set_hsts():
+    # response.set_header('Strict-Transport-Security', 'max-age=63072000; includeSubDomains; preload')
+# Naj se vedno uporabljajo HTTPS zahtevki
+
+# response.set_cookie("uporabnik", uporabnik, secret=STARI_SLOVENSKI_PREGOVOR, path="/", secure=True, httponly=True)
+# da ga brskalik lahko pošilja le po HTTPS povezavi
+
 asgi_app = AsyncioWSGIMiddleware(app)

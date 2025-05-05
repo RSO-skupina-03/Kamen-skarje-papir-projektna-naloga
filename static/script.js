@@ -1,9 +1,10 @@
 function Uporabnik() {
     
     var user = document.getElementById("uporabnik").value;
+    var pass = document.getElementById("password").value;
     fetch("/zacetni_menu/", {
         method: "PUT", 
-        body: JSON.stringify({ uporabnik: user }),
+        body: JSON.stringify({ uporabnik: user, password: pass}),
         headers: { "Content-Type": "application/json" }
     })
     .then(response => {
