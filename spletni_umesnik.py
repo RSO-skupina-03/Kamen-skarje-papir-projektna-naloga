@@ -1,10 +1,15 @@
+import os
+import json
 import model
 import bottle
-import json
 import xml.etree.ElementTree as ET
+from dotenv import load_dotenv
+from hypercorn.middleware import AsyncioWSGIMiddleware
+
+load_dotenv()
 
 ID_IGRE_COKOLADNI_PISKOT = "id_igre"
-STARI_SLOVENSKI_PREGOVOR = "Ce pes psu taco moli potem tudi sam vanjo pade"
+STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 
 ksp = model.KSP()
 kspov = model.KSPOV()
@@ -202,8 +207,4 @@ def zgodovina_xml():
     return ET.tostring(root, encoding="unicode")
 
 app = bottle.default_app()
-
-
-
-
-
+asgi_app = AsyncioWSGIMiddleware(app)

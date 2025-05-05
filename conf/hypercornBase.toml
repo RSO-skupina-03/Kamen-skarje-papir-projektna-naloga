@@ -1,0 +1,12 @@
+bind = ["127.0.0.1:8443"]        # TCP → HTTP/1.1 & HTTP/2 (ALPN)
+certfile = "certs/fullchain.pem"
+keyfile  = "certs/privkey.pem"
+
+
+use_reloader      = true
+loglevel          = "debug"
+accesslog         = "-"
+errorlog          = "-"
+
+# show remote addr, request, protocol, status, size, and time in µs
+access_log_format = "%(h)s \"%(r)s\" %(H)s → %(s)s %(b)s bytes in %(D)sµs"
