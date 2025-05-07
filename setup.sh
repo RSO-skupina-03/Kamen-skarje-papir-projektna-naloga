@@ -29,6 +29,7 @@ sudo cp ca.pem /usr/local/share/ca-certificates/ca.crt
 sudo update-ca-certificates
 # When you do that you need to upload ca.pem file to the browser
 
+# http3 development: https://github.com/kelmenhorst/quic-censorship/blob/main/browsers.md
 
 # How to run application (http/1.1, http/2, http/3)
 hypercorn --config conf/hypercornAll.toml   spletni_umesnik:asgi_app
