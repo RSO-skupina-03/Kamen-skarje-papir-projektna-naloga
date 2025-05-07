@@ -1,5 +1,6 @@
-bind = ["127.0.0.1:8443"]        # TCP → HTTP/1.1 & HTTP/2 (ALPN)
-quic_bind = ["127.0.0.1:8334"]  # UDP → QUIC/HTTP-3
+bind = ["127.0.0.1:4333"]        # TCP → HTTP/1.1 & HTTP/2 (ALPN)
+quic_bind = ["127.0.0.1:4433"]  # UDP → QUIC/HTTP-3
+insecure_bind = ["127.0.0.1:8080"]
 certfile = "certs/fullchain.pem"
 keyfile  = "certs/privkey.pem"
 

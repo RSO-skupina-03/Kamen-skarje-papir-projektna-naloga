@@ -131,4 +131,4 @@ dmypy.json
 .pyre/
 
 # ignore real TLS certs
-certs/*.pem
+certs/*

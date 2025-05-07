@@ -210,6 +210,10 @@ def zgodovina_xml():
 
 app = bottle.default_app()
 
+@app.hook('after_request')
+def advertise_http3():
+    response.set_header('Alt-Svc', 'h3=":4433"; ma=86400')
+
 # @app.hook('before_request')
 # def enforce_https():
     # Če pride neprenjujen klic po http://
