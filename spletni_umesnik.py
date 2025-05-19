@@ -16,7 +16,8 @@ STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 LDAP_HOST       = os.environ["LDAP_HOST"]
 LDAP_PORT       = int(os.environ["LDAP_PORT"])
 LDAP_USER_BASE  = os.environ["LDAP_USER_BASE"] 
-LDAP_GROUP_BASE = os.environ["LDAP_GROUP_BASE"] 
+LDAP_GROUP_BASE = os.environ["LDAP_GROUP_BASE"]
+VALID = True
 
 ksp = model.KSP()
 kspov = model.KSPOV()
@@ -73,7 +74,8 @@ def zacetni_menu():
         response.status = 200
         return
     else:
-        return bottle.template('views/log.tpl')
+        valid = request.query.get("valid","1") != "0"
+        return bottle.template('views/log.tpl', valid=valid)
 
 @bottle.route('/end/', method=['GET','HEAD'])
 def zacetni_menu():
@@ -114,8 +116,12 @@ def prijava():
             info = ldap_authenticate_and_get_info(user, password)
 
             if info is None:
-                return bottle.abort(401, "Uporabnik ni registriran ali napačno geslo")
+                VALID = False
+                response.status = 303
+                response.set_header("Location", "/?valid=0")
+                return
             
+            VALID = True
             print(info["cn"] + " " + info["sn"] + " " + json.dumps(info["groups"]))
             uporabnik = info["cn"] + " " + info["sn"]
             sub = json.dumps(info["groups"])
