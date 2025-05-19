@@ -2,23 +2,63 @@ import os
 import json
 import model
 import bottle
-from bottle import request, redirect, response
+from bottle import request, response
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from hypercorn.middleware import AsyncioWSGIMiddleware
+from ldap3 import Server, Connection, ALL
 
 load_dotenv()
 
 ID_IGRE_COKOLADNI_PISKOT = "id_igre"
 STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 
+LDAP_HOST       = os.environ["LDAP_HOST"]
+LDAP_PORT       = int(os.environ["LDAP_PORT"])
+LDAP_USER_BASE  = os.environ["LDAP_USER_BASE"] 
+LDAP_GROUP_BASE = os.environ["LDAP_GROUP_BASE"] 
+
 ksp = model.KSP()
 kspov = model.KSPOV()
+
+def ldap_authenticate_and_get_info(uid: str, password: str):
+    srv = Server(LDAP_HOST, port=LDAP_PORT,get_info=ALL) 
+    # 1) Anonymous bind just to look up the user's DN
+    anon = Connection(srv, auto_bind=True)
+    anon.search(search_base = LDAP_USER_BASE, search_filter = f"(uid={uid})")
+    if not anon.entries:
+        anon.unbind()
+        return None
+    user_dn = anon.entries[0].entry_dn
+    anon.unbind()
+
+    # Bind as the user to verify the password
+    try:
+        user_conn = Connection(srv, user=user_dn, password=password, auto_bind=True)
+    except Exception:
+        # invalid credentials
+        return None
+     
+    # Now that we're bound as the user, fetch their cn & sn
+    user_conn.search(search_base   = user_dn, search_filter = "(objectClass=inetOrgPerson)", attributes = ["cn","sn"])
+    entry = user_conn.entries[0]
+    cn = entry.cn.value
+    sn = entry.sn.value
+
+    # Still on the same connection, search for their groups
+    user_conn.search(search_base   = LDAP_GROUP_BASE, search_filter = f"(member={user_dn})", attributes = ["cn"])
+    groups = [g.cn.value for g in user_conn.entries]    
+    user_conn.unbind()
+    return {"cn": cn, "sn": sn, "groups": groups}
 
 @bottle.error(404)
 def error404(error):
     return bottle.template('views/error.tpl')
-    
+
+@bottle.error(401)
+def error401(error):
+    return bottle.template('views/error.tpl')
+
 @bottle.error(500)
 def error500(error):
     return bottle.template('views/error.tpl')
@@ -63,15 +103,29 @@ def prijava():
         response.set_header("Location", "/end/")
         return
     else:
-        uporabnik = bottle.request.json.get("uporabnik")
+        user = bottle.request.json.get("uporabnik")
         password = bottle.request.json.get("password")
-        if uporabnik == "Gost" or uporabnik == "":
+        sub = ""
+        uporabnik = ""
+        if user == "Gost" or user == "":
             uporabnik = "Gost"
+            sub = json.dumps("non-subscribers")
+        else:
+            info = ldap_authenticate_and_get_info(user, password)
+
+            if info is None:
+                return bottle.abort(401, "Uporabnik ni registriran ali napačno geslo")
+            
+            print(info["cn"] + " " + info["sn"] + " " + json.dumps(info["groups"]))
+            uporabnik = info["cn"] + " " + info["sn"]
+            sub = json.dumps(info["groups"])
+
     
         bottle.response.set_cookie("uporabnik", uporabnik, path='/',secret=STARI_SLOVENSKI_PREGOVOR)
+        bottle.response.set_cookie("narocnik", sub, path='/',secret=STARI_SLOVENSKI_PREGOVOR)
 
-        ksp.nastavi_uporabnika(uporabnik)
-        kspov.nastavi_uporabnika(uporabnik)
+        ksp.nastavi_uporabnika(user)
+        kspov.nastavi_uporabnika(user)
 
         ksp.preberi_iz_datoteke()
         kspov.preberi_iz_datoteke()
@@ -103,6 +157,8 @@ def igra_ksp():
         return
     else:
         id_igre = bottle.request.get_cookie(ID_IGRE_COKOLADNI_PISKOT, secret=STARI_SLOVENSKI_PREGOVOR)
+        raw = bottle.request.get_cookie("narocnik", secret=STARI_SLOVENSKI_PREGOVOR)
+        is_subscriber = "subscribers" in json.loads(raw)
         if id_igre is None:
             response.status = 303
             response.set_header("Location", "/nova_igra_ksp/")
@@ -116,7 +172,7 @@ def igra_ksp():
         
             # print(id_igre)
             igra = ksp.igre[id_igre]
-            return bottle.template("views/ksp.tpl", igra=igra, id_igre=id_igre)
+            return bottle.template("views/ksp.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
 
 
 @bottle.route('/ksp/', method=['POST','HEAD'])
@@ -224,6 +280,8 @@ def igra_ksp():
         return
     else:
         id_igre = bottle.request.get_cookie(ID_IGRE_COKOLADNI_PISKOT, secret=STARI_SLOVENSKI_PREGOVOR)
+        raw = bottle.request.get_cookie("narocnik", secret=STARI_SLOVENSKI_PREGOVOR)
+        is_subscriber = "subscribers" in json.loads(raw)
         if id_igre is None:
             response.status = 303
             response.set_header("Location", "/nova_igra_kspov/")
@@ -237,7 +295,7 @@ def igra_ksp():
         
             # print(id_igre)
             igra = kspov.igre[id_igre]
-            return bottle.template("views/kspov.tpl", igra=igra, id_igre=id_igre)
+            return bottle.template("views/kspov.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
         
 @bottle.route('/kspov/', method=['POST','HEAD'])
 def izbira_igralca_kspov():

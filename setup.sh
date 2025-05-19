@@ -9,6 +9,7 @@ pip install bottle #for REST API
 pip install hypercorn # for handling http connection
 pip install aioquic # for Http/3 connection
 pip install python-dotenv # for shared secrets
+pip install ldap3 # for ladp cennection
 
 # For testing http/3 with self-signed certificate
 curl -Lo http3_client.py \
@@ -30,6 +31,38 @@ sudo update-ca-certificates
 # When you do that you need to upload ca.pem file to the browser
 
 # http3 development: https://github.com/kelmenhorst/quic-censorship/blob/main/browsers.md
+
+#LAPD server -> admin pass: beno
+sudo apt install slapd ldap-utils
+sudo dpkg-reconfigure slapd
+# DNS domain name: ksp.si
+# Organization name: ksp
+
+# check for dc=ksp, dc=si
+sudo grep -R olcSuffix /etc/ldap/slapd.d
+
+#for encripted password => user name == password
+userPassword: slappasswd -s pass
+
+# cd to where the populate.ldif is
+ldapadd -x -D "cn=admin,dc=ksp,dc=si" -W -f populate.ldif
+
+# check if corectly inside
+ldapsearch -x -LLL -H ldap:/// -b dc=ksp,dc=si '(objectClass=*)'
+
+# check on witch port and ip is listening
+sudo ss -tulnp | grep slapd
+
+#Change the IP
+sudo nano /etc/default/slapd
+
+#Start server
+sudo systemctl start slapd
+
+#Stop the server
+sudo systemctl stop slapd
+sudo systemctl disable slapd
+
 
 # How to run application (http/1.1, http/2, http/3)
 hypercorn --config conf/hypercornAll.toml   spletni_umesnik:asgi_app

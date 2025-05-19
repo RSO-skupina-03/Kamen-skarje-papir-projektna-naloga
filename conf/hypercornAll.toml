@@ -7,8 +7,8 @@ keyfile  = "certs/privkey.pem"
 
 use_reloader      = true
 loglevel          = "debug"
-accesslog         = "-"
-errorlog          = "-"
+accesslog         = "/dev/stdout"
+errorlog          = "/dev/stdout"
 
 # show remote addr, request, protocol, status, size, and time in µs
 access_log_format = "%(h)s \"%(r)s\" %(H)s → %(s)s %(b)s bytes in %(D)sµs"
