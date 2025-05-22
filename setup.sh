@@ -24,8 +24,8 @@ openssl genrsa -out privkey.pem 4096
 openssl req -new -sha256 -subj "/CN=KSP" -key privkey.pem -out cert.csr
 echo "subjectAltName=IP:127.0.0.1" >> extfile.cnf #IP needs to be configured correctly
 openssl x509 -req -sha256 -days 365 -in cert.csr -CA ca.pem -CAkey ca-key.pem -out cert.pem -extfile extfile.cnf -CAcreateserial
-cat cert.pem > fullchain.pem
-cat ca.pem > fullchain.pem
+cat cert.pem >> fullchain.pem
+cat ca.pem >> fullchain.pem
 sudo cp ca.pem /usr/local/share/ca-certificates/ca.crt
 sudo update-ca-certificates
 # When you do that you need to upload ca.pem file to the browser
