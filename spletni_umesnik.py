@@ -17,7 +17,6 @@ LDAP_HOST       = os.environ["LDAP_HOST"]
 LDAP_PORT       = int(os.environ["LDAP_PORT"])
 LDAP_USER_BASE  = os.environ["LDAP_USER_BASE"] 
 LDAP_GROUP_BASE = os.environ["LDAP_GROUP_BASE"]
-VALID = True
 
 ksp = model.KSP()
 kspov = model.KSPOV()
@@ -116,12 +115,10 @@ def prijava():
             info = ldap_authenticate_and_get_info(user, password)
 
             if info is None:
-                VALID = False
                 response.status = 303
                 response.set_header("Location", "/?valid=0")
                 return
             
-            VALID = True
             print(info["cn"] + " " + info["sn"] + " " + json.dumps(info["groups"]))
             uporabnik = info["cn"] + " " + info["sn"]
             sub = json.dumps(info["groups"])

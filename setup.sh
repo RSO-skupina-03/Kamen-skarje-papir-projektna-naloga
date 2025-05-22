@@ -64,6 +64,10 @@ sudo systemctl stop slapd
 sudo systemctl disable slapd
 
 
+# Download cert
+curl --create-dirs -o $HOME/.postgresql/root.crt 'https://cockroachlabs.cloud/clusters/44769303-8be5-4c0f-8c1c-13c2db0524ea/cert'
+
+
 # How to run application (http/1.1, http/2, http/3)
 hypercorn --config conf/hypercornAll.toml   spletni_umesnik:asgi_app
 
