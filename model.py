@@ -152,15 +152,14 @@ class Datoteka:
     def __init__(self):
         self.igre = {}
         self.uporabnik = ""
+        self.id = 0
 
     def nastavi_uporabnika(self, uporabnik):
         self.uporabnik = uporabnik
 
     def prosti_id_igre(self):
-        if len(self.igre) == 0:
-            return 0
-        else:
-            return len(self.igre) + 1
+        self.id = self.id + 1
+        return self.id
 
 #============================================================================================================================================================
    
@@ -219,9 +218,7 @@ class KSP(Datoteka):
         else:
             self.igre = {}
 
-    def insert_game_ksp(self):
-        with open(DATOTEKA_KSP,"r", encoding="utf-8") as f:
-            data = json.load(f)
+    def insert_game_ksp(self, game_id, player_score, computer_score):
         connection = psycopg2.connect(DB_URL)
         cursor = connection.cursor()
 
@@ -232,16 +229,29 @@ class KSP(Datoteka):
                 SET player   = EXCLUDED.player,
                     computer = EXCLUDED.computer
             """
-        for username, games in data.items():
-            if self.uporabnik == username:
-                for game_id_str, scores in games.items():
-                    game_id, player_score, computer_score = int(game_id_str), scores[0], scores[1]
-                    cursor.execute(upsert_sql, (username, game_id, player_score, computer_score))
+        cursor.execute(upsert_sql, (self.uporabnik, game_id, player_score, computer_score))
 
         connection.commit()
         cursor.close()
         connection.close()
         print("Data loaded into ksp.")
+    
+    def get_id_ksp(self):
+        conn = psycopg2.connect(DB_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT MAX(game_id) FROM ksp WHERE username = %s",
+                    (self.uporabnik,)
+                )
+                row = cur.fetchone()
+                max_id = row[0]
+                if max_id is not None:
+                    self.id = row[0]
+                else:
+                    self.id = 0
+        finally:
+            conn.close()
 #=========================================================================================================================================================
 
 class KSPOV(Datoteka):
@@ -298,6 +308,41 @@ class KSPOV(Datoteka):
             }
         else:
             self.igre = {}
+
+    def insert_game_kspov(self, game_id, player_score, computer_score):
+        connection = psycopg2.connect(DB_URL)
+        cursor = connection.cursor()
+
+        upsert_sql = """
+            INSERT INTO kspov (username, game_id, player, computer)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (username, game_id) DO UPDATE
+                SET player   = EXCLUDED.player,
+                    computer = EXCLUDED.computer
+            """
+        cursor.execute(upsert_sql, (self.uporabnik, game_id, player_score, computer_score))
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+        print("Data loaded into kspov.")
+
+    def get_id_kspov(self):
+        conn = psycopg2.connect(DB_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "SELECT MAX(game_id) FROM kspov WHERE username = %s",
+                    (self.uporabnik,)
+                )
+                row = cur.fetchone()
+                max_id = row[0]
+                if max_id is not None:
+                    self.id = row[0]
+                else:
+                    self.id = 0
+        finally:
+            conn.close()
 
 #pomembno je da beležim rezultat igre in sicer to lahko shranim v datoteko kot {id_igre: [igralec, racunalnik]
 

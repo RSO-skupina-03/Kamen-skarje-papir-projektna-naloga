@@ -131,6 +131,12 @@ def prijava():
         ksp.nastavi_uporabnika(user)
         kspov.nastavi_uporabnika(user)
 
+        kspov.get_id_kspov()
+        ksp.get_id_ksp()
+
+        print(ksp.id, kspov.id)
+        print("\n")
+
         ksp.preberi_iz_datoteke()
         kspov.preberi_iz_datoteke()
 
@@ -148,7 +154,7 @@ def nova_igra():
         return
     else:
         id_nova_igra = ksp.nova_igra()
-        # print(id_nova_igra)
+        print(id_nova_igra)
         bottle.response.set_cookie(ID_IGRE_COKOLADNI_PISKOT, str(id_nova_igra), path='/', secret=STARI_SLOVENSKI_PREGOVOR)
         response.status = 303
         response.set_header("Location", "/ksp/")
@@ -178,7 +184,7 @@ def igra_ksp():
             igra = ksp.igre[id_igre]
             if igra.zmaga_igralca() or igra.zmaga_racunalnika():
                 if is_subscriber:
-                    threading.Thread(target=ksp.insert_game_ksp, daemon=True).start()
+                    threading.Thread(target=ksp.insert_game_ksp(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika()), daemon=True).start()
             return bottle.template("views/ksp.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
 
 
@@ -273,14 +279,14 @@ def nova_igra_1():
         return
     else:
         id_nova_igra = kspov.nova_igra_1()
-        # print(id_nova_igra)
+        print(id_nova_igra)
         bottle.response.set_cookie(ID_IGRE_COKOLADNI_PISKOT, str(id_nova_igra), path='/', secret=STARI_SLOVENSKI_PREGOVOR)
         response.status = 303
         response.set_header("Location", "/kspov/")
         return
     
 @bottle.route('/kspov/', method=['GET','HEAD'])
-def igra_ksp():
+def igra_kspov():
     if request.method == 'HEAD':
         response.status = 303
         response.set_header("Location", "/kspov/")
@@ -302,6 +308,9 @@ def igra_ksp():
         
             # print(id_igre)
             igra = kspov.igre[id_igre]
+            if igra.zmaga_igralca_1() or igra.zmaga_racunalnika_1():
+                if is_subscriber:
+                    threading.Thread(target=kspov.insert_game_kspov(id_igre, igra.koncni_izid_igralca_1(), igra.koncni_izid_racunalnika_1()), daemon=True).start()
             return bottle.template("views/kspov.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
         
 @bottle.route('/kspov/', method=['POST','HEAD'])
