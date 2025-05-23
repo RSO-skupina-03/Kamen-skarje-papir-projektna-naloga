@@ -1,7 +1,12 @@
-from random import randint
-import json
 import os
+import json
+import psycopg2
+from random import randint
+from dotenv import load_dotenv
+from psycopg2 import Error
 
+load_dotenv()
+DB_URL = os.environ["DB_URL"]
 MOZNOSTI = ['Kamen', 'Škarje', 'Papir']
 MOZNOSTI_2 = ['Kamen', 'Škarje', 'Papir', 'Voda', 'Ogenj']
 DATOTEKA_KSP = 'datoteke/ksp.json'
@@ -213,6 +218,30 @@ class KSP(Datoteka):
             }
         else:
             self.igre = {}
+
+    def insert_game_ksp(self):
+        with open(DATOTEKA_KSP,"r", encoding="utf-8") as f:
+            data = json.load(f)
+        connection = psycopg2.connect(DB_URL)
+        cursor = connection.cursor()
+
+        upsert_sql = """
+            INSERT INTO ksp (username, game_id, player, computer)
+            VALUES (%s, %s, %s, %s)
+            ON CONFLICT (username, game_id) DO UPDATE
+                SET player   = EXCLUDED.player,
+                    computer = EXCLUDED.computer
+            """
+        for username, games in data.items():
+            if self.uporabnik == username:
+                for game_id_str, scores in games.items():
+                    game_id, player_score, computer_score = int(game_id_str), scores[0], scores[1]
+                    cursor.execute(upsert_sql, (username, game_id, player_score, computer_score))
+
+        connection.commit()
+        cursor.close()
+        connection.close()
+        print("Data loaded into ksp.")
 #=========================================================================================================================================================
 
 class KSPOV(Datoteka):

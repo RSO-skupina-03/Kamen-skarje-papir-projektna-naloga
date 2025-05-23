@@ -30,7 +30,7 @@ sudo cp ca.pem /usr/local/share/ca-certificates/ca.crt
 sudo update-ca-certificates
 # When you do that you need to upload ca.pem file to the browser
 
-# http3 development: https://github.com/kelmenhorst/quic-censorship/blob/main/browsers.md
+# http3 development:  
 
 #LAPD server -> admin pass: beno
 sudo apt install slapd ldap-utils
@@ -64,7 +64,9 @@ sudo systemctl stop slapd
 sudo systemctl disable slapd
 
 
-# Download cert
+# Download cert -> install for database
+sudo apt install -y python3-dev libpq-dev
+pip install psycopg2
 curl --create-dirs -o $HOME/.postgresql/root.crt 'https://cockroachlabs.cloud/clusters/44769303-8be5-4c0f-8c1c-13c2db0524ea/cert'
 
 

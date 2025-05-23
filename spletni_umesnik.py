@@ -2,6 +2,7 @@ import os
 import json
 import model
 import bottle
+import threading
 from bottle import request, response
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
@@ -175,6 +176,9 @@ def igra_ksp():
         
             # print(id_igre)
             igra = ksp.igre[id_igre]
+            if igra.zmaga_igralca() or igra.zmaga_racunalnika():
+                if is_subscriber:
+                    threading.Thread(target=ksp.insert_game_ksp, daemon=True).start()
             return bottle.template("views/ksp.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
 
 
