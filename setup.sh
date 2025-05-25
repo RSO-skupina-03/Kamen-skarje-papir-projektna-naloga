@@ -22,7 +22,7 @@ openssl genrsa -aes256 -out ca-key.pem 4096
 openssl req -new -x509 -sha256 -days 365 -key ca-key.pem -out ca.pem
 openssl genrsa -out privkey.pem 4096
 openssl req -new -sha256 -subj "/CN=KSP" -key privkey.pem -out cert.csr
-echo "subjectAltName=IP:127.0.0.1" >> extfile.cnf #IP needs to be configured correctly
+echo "subjectAltName=IP:192.168.7.101,IP:88.200.24.237,IP:2001:1470:fffd:99:20c:29ff:fec1:3126" >> extfile.cnf #IP needs to be configured correctly
 openssl x509 -req -sha256 -days 365 -in cert.csr -CA ca.pem -CAkey ca-key.pem -out cert.pem -extfile extfile.cnf -CAcreateserial
 cat cert.pem >> fullchain.pem
 cat ca.pem >> fullchain.pem
