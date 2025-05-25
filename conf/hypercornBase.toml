@@ -1,4 +1,5 @@
-bind = ["127.0.0.1:8443"]        # TCP → HTTP/1.1 & HTTP/2 (ALPN)
+# bind = ["127.0.0.1:8443"]
+bind = ["192.168.7.101:8443", "[2001:1470:fffd:99:20c:29ff:fec1:3126]:8443"]        # TCP → HTTP/1.1 & HTTP/2 (ALPN)
 certfile = "certs/fullchain.pem"
 keyfile  = "certs/privkey.pem"
 

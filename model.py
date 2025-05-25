@@ -160,6 +160,9 @@ class Datoteka:
     def prosti_id_igre(self):
         self.id = self.id + 1
         return self.id
+    
+    def nastavi_id(self, id):
+        self.id = id
 
 #============================================================================================================================================================
    
@@ -252,6 +255,56 @@ class KSP(Datoteka):
                     self.id = 0
         finally:
             conn.close()
+
+    def load_user_history_ksp(self):
+        conn = psycopg2.connect(DB_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    SELECT game_id, player, computer
+                    FROM ksp
+                    WHERE username = %s
+                    ORDER BY game_id
+                    """,
+                    (self.uporabnik,)
+                )
+                rows = cur.fetchall()
+
+            user_games = {
+                str(gid): [player, computer]
+                for gid, player, computer in rows
+            }
+
+            with open(DATOTEKA_KSP, "r", encoding="utf-8") as f:
+                    try:
+                        all_data = json.load(f)
+                    except json.JSONDecodeError:
+                        all_data = {}
+
+            existing = all_data.get(self.uporabnik, {})
+            existing.update(user_games)
+            all_data[self.uporabnik] = existing
+
+            with open(DATOTEKA_KSP, "w", encoding="utf-8") as f:
+                json.dump(all_data, f, indent=2, ensure_ascii=False)
+
+        finally:
+            conn.close()
+
+    def delete_ksp(self):
+        conn = psycopg2.connect(DB_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM ksp WHERE username = %s",
+                    (self.uporabnik,)
+                )
+            conn.commit()
+            self.id = 0
+        finally:
+            conn.close()
+        
 #=========================================================================================================================================================
 
 class KSPOV(Datoteka):
@@ -341,6 +394,50 @@ class KSPOV(Datoteka):
                     self.id = row[0]
                 else:
                     self.id = 0
+        finally:
+            conn.close()
+
+    def load_user_history_kspov(self):
+        conn = psycopg2.connect(DB_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                """
+                 SELECT game_id, player, computer
+                 FROM kspov
+                 WHERE username = %s
+                 ORDER BY game_id
+                """,
+                (self.uporabnik,)
+                )
+                rows = cur.fetchall()
+            user_games = { str(gid): [player, computer] for gid, player, computer in rows }
+
+            with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as f:
+                try:
+                    all_data = json.load(f)
+                except json.JSONDecodeError:
+                    all_data = {}
+                
+            existing = all_data.get(self.uporabnik, {})
+            existing.update(user_games)         # add/overwrite only those game_ids
+            all_data[self.uporabnik] = existing
+
+            with open(DATOTEKA_KSPOV, "w", encoding="utf-8") as f:
+                json.dump(all_data, f, indent=2, ensure_ascii=False)
+        finally:
+            conn.close()
+
+    def delete_kspov(self):
+        conn = psycopg2.connect(DB_URL)
+        try:
+            with conn.cursor() as cur:
+                cur.execute(
+                    "DELETE FROM kspov WHERE username = %s",
+                    (self.uporabnik,)
+                )
+            conn.commit()
+            self.id = 0
         finally:
             conn.close()
 

@@ -111,7 +111,7 @@ def prijava():
         uporabnik = ""
         if user == "Gost" or user == "":
             uporabnik = "Gost"
-            sub = json.dumps("non-subscribers")
+            sub = json.dumps(['non-subscribers'])
         else:
             info = ldap_authenticate_and_get_info(user, password)
 
@@ -131,8 +131,16 @@ def prijava():
         ksp.nastavi_uporabnika(user)
         kspov.nastavi_uporabnika(user)
 
-        kspov.get_id_kspov()
-        ksp.get_id_ksp()
+        is_subscriber = "subscribers" in json.loads(sub)
+        # print(json.loads(sub))
+        if is_subscriber:
+            kspov.get_id_kspov()
+            ksp.get_id_ksp()
+            threading.Thread(ksp.load_user_history_ksp(),daemon=True).start()
+            threading.Thread(kspov.load_user_history_kspov(),daemon=True).start()
+        else:
+            ksp.nastavi_id(len(ksp.igre))
+            kspov.nastavi_id(len(kspov.igre))
 
         print(ksp.id, kspov.id)
         print("\n")
@@ -185,6 +193,10 @@ def igra_ksp():
             if igra.zmaga_igralca() or igra.zmaga_racunalnika():
                 if is_subscriber:
                     threading.Thread(target=ksp.insert_game_ksp(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika()), daemon=True).start()
+                else:
+                    ksp.igre.pop(id_igre, None)
+                    ksp.shrani_v_datoteko()
+                    ksp.nastavi_id(len(ksp.igre))
             return bottle.template("views/ksp.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
 
 
@@ -236,6 +248,10 @@ def brisi_igre_kps():
     else:
         ksp.igre.clear()
         ksp.shrani_v_datoteko()
+        raw = bottle.request.get_cookie("narocnik", secret=STARI_SLOVENSKI_PREGOVOR)
+        is_subscriber = "subscribers" in json.loads(raw)
+        if is_subscriber:
+            threading.Thread(target=ksp.delete_ksp(), daemon=True).start()
         response.status = 303
         response.set_header("Location", "/zgodovina_ksp/")
         return
@@ -311,6 +327,10 @@ def igra_kspov():
             if igra.zmaga_igralca_1() or igra.zmaga_racunalnika_1():
                 if is_subscriber:
                     threading.Thread(target=kspov.insert_game_kspov(id_igre, igra.koncni_izid_igralca_1(), igra.koncni_izid_racunalnika_1()), daemon=True).start()
+                else:
+                    kspov.igre.pop(id_igre, None)
+                    kspov.shrani_v_datoteko()
+                    kspov.nastavi_id(len(kspov.igre))
             return bottle.template("views/kspov.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
         
 @bottle.route('/kspov/', method=['POST','HEAD'])
@@ -361,6 +381,10 @@ def brisi_igre_kpsov():
     else:
         kspov.igre.clear()
         kspov.shrani_v_datoteko()
+        raw = bottle.request.get_cookie("narocnik", secret=STARI_SLOVENSKI_PREGOVOR)
+        is_subscriber = "subscribers" in json.loads(raw)
+        if is_subscriber:
+            threading.Thread(target=ksp.delete_kspov(), daemon=True).start()
         response.status = 303
         response.set_header("Location", "/zgodovina_kspov/")
         return
