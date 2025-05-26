@@ -69,6 +69,19 @@ sudo apt install -y python3-dev libpq-dev
 pip install psycopg2
 curl --create-dirs -o $HOME/.postgresql/root.crt 'https://cockroachlabs.cloud/clusters/44769303-8be5-4c0f-8c1c-13c2db0524ea/cert'
 
+#SNMP config
+sudo apt -y update
+sudo apt-get install snmp snmpd
+sudo nano /etc/snmp/snmpd.conf #set the coorect ip
+service snmpd start
+sudo ss -nulp | grep :161
+
+# for testnig SNMP
+sudo apt-get install snmp-mibs-downloader
+snmpwalk -c public -v 2c 127.0.0.1
+
+
+
 
 # How to run application (http/1.1, http/2, http/3)
 hypercorn --config conf/hypercornAll.toml   spletni_umesnik:asgi_app
