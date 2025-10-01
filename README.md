@@ -17,7 +17,7 @@ This project contains a web and command line application for the game Rock Paper
 ```
 .
 ├─ Kamen-skarje-papir-projektna-naloga/
-│  ├─ certs/                  # Self signed cetrificates for HTTP/2, HTTP/3
+│  ├─ certs/                  # Self-signed certificates for HTTP/2, HTTP/3
 │  ├─ conf/                   # Configuration files for Hypercorn           
 │  ├─ datoteke/               # Json files for application data
 │  ├─ static/                 # Frontend scripts                  
@@ -79,19 +79,33 @@ sudo update-ca-certificates
 
 ---
 ## Running Application
+The web application can be run in three different configurations:
+
+- `hypercornAll.toml`: HTTP/1.1, HTTP/2, HTTP/3  
+- `hypercornBase.toml`: HTTP/2  
+- `hypercornDep.toml`: HTTP/1.1  
+
+The following table represents the ports on which the web application is listening.  
+Currently, the IP address is set to localhost (`127.0.0.1`).  
+
+| Protocol     | Port |
+|:------------:|:----:|
+| **HTTP/1.1** | 8080 |
+| **HTTP/2**   | 4333 |
+| **HTTP/3**   | 4433 |
+
 ```bash
-# How to run application (http/1.1, http/2, http/3)
+# How to run application for HTTP/1.1, HTTP/2 and HTTP/3
 hypercorn --config conf/hypercornAll.toml   spletni_umesnik:asgi_app
 
-# How to run application (http/1.1, http/2)
+# How to run application for HTTP/2
 hypercorn --config conf/hypercornBase.toml   spletni_umesnik:asgi_app
 
-# How to run application (http/1.1)
+# How to run application for HTTP/1.1
 hypercorn --config conf/hypercornDep.toml   spletni_umesnik:app
-```
 
----
-## Future work
-We have found a faster solution, but there is still room for improvement. Currently, we compute the GLCM histogram in double-precision floating-point; switching to single precision could further increase speed and reduce memory usage at the cost of lower numerical accuracy. We also plan to explore unordered additive vector reduction, which is generally faster than ordered reduction, and to quantify the error introduced by this approach. The current implementation runs on a single core; we plan to implement a multicore version.
+# How to run application for command line
+python tekstovni_umesnik.py
+```
 
 ---
