@@ -1,5 +1,4 @@
-# insecure_bind = ["127.0.0.1:8080"]
-insecure_bind = ["192.168.7.101:8080", "[2001:1470:fffd:99:20c:29ff:fec1:3126]:8080"]        # TCP → HTTP/1.1
+insecure_bind = ["127.0.0.1:8080"]
 
 use_reloader      = true
 loglevel          = "debug"
