@@ -6,7 +6,7 @@
 ---
 
 ## Project overview
-This project contains a web and command line application for the game Rock Paper Scissors. It runs on Linux. The web application supports HTTP/1.1, HTTP/2, and HTTP/3, and user information is stored on an LDAP server.
+This project contains a web and command line application for the game [Rock Paper Scissors](https://en.wikipedia.org/wiki/Rock_paper_scissors#/media/File:Rock-paper-scissors.svg) and the game [Rock Paper Scissors Water Fire](https://en.wikipedia.org/wiki/Rock_paper_scissors#/media/File:Rpsfw_game.svg). It runs on Linux. The web application supports HTTP/1.1, HTTP/2, and HTTP/3, and user information is stored on an LDAP server. The Rock Paper Scissors game is played for 7 rounds and the Rock Paper Scissors Water Fire game is played for 15 rounds.
 
 **Tech stack:**
 - Frontend: HTML, CSS and JavaScript
