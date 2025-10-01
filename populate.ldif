@@ -21,7 +21,7 @@ dn: uid=beno,ou=People,dc=ksp,dc=si
 objectClass: inetOrgPerson
 uid: beno
 cn: Beno
-sn: Batina
+sn: Novak
 mail: beno@beno.com
 userPassword: {SSHA}KOoD0zGIPLsAj2SmkYGzT0xfO+CbzoJz
 
@@ -33,7 +33,7 @@ dn: uid=jano,ou=People,dc=ksp,dc=si
 objectClass: inetOrgPerson
 uid: jano
 cn: Jano
-sn: Gracler
+sn: Novak
 mail: jano@jano.com
 userPassword: {SSHA}7Kt7ugMMjdcG4XeNxqVZ1nrk0n2PLMhD
 

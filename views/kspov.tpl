@@ -48,7 +48,7 @@
         </div>
         <P>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM {{igra.koncni_izid_igralca_1()}} : {{igra.koncni_izid_racunalnika_1()}}</P>
         <form action="/nova_igra_kspov/" method="GET">
-            <button type="submit" class="zacetni">STAY HARD !!!</button>
+            <button type="submit" class="zacetni">BRAVO !!!</button>
         </form>
     </div>
 </div>
