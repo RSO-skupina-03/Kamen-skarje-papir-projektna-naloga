@@ -9,11 +9,11 @@ graph TB
     
     subgraph "Microservices Layer"
         subgraph "Auth Service"
-            AUTH[Auth Service<br/>Python FastAPI<br/>• OAuth 2.0 Integration<br/>• JWT Generation<br/>• User Validation]
+            AUTH[Auth Service<br/>Python Hypercorn<br/>• OAuth 2.0 Integration<br/>• JWT Generation<br/>• User Validation]
         end
         
         subgraph "Game Engine Service"
-            GAME[Game Engine<br/>Python FastAPI<br/>• KSP Logic<br/>• KSPOV Logic<br/>• Game Rules<br/>Port: 8002]
+            GAME[Game Engine<br/>Python Hypercorn<br/>• KSP Logic<br/>• KSPOV Logic<br/>• Game Rules<br/>]
         end
         
         subgraph "Session Service"
@@ -21,7 +21,7 @@ graph TB
         end
         
         subgraph "History Service"
-            HISTORY[History Service<br/>Python FastAPI<br/>• Game Results<br/>• Statistics<br/>• Analytics]
+            HISTORY[History Service<br/>Python Hypercorn<br/>• Game Results]
         end
     end
     
@@ -32,7 +32,7 @@ graph TB
         
         subgraph "Databases"
             REDIS[(Redis<br/>Session Storage<br/>• Game State<br/>• TTL Management)]
-            POSTGRES[(PostgreSQL<br/>Persistent Storage<br/>• Game History<br/>• User Statistics)]
+            POSTGRES[(PostgreSQL<br/>Persistent Storage<br/>• User Game History<br/>)]
         end
     end
     
@@ -45,8 +45,8 @@ graph TB
     GW -->|HTTPS/REST<br/>History Access| HISTORY
     
     %% Inter-service communication
-    SESSION -->|gRPC<br/>Game Logic| GAME
-    SESSION -->|gRPC<br/>Async Storage| HISTORY
+    SESSION -->|HTTPS/REST<br/>Game Logic| GAME
+    SESSION -->|HTTPS/REST<br/>Async Storage| HISTORY
     AUTH -->|OAuth 2.0 Protocol<br/>User Auth| OAUTH
     
     %% Database connections

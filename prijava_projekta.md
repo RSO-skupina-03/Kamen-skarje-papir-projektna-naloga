@@ -4,24 +4,24 @@
 
 **Naslov projekta:** Predelava aplikacije Kamen-Škarje-Papir v Cloud Native Mikro Storitve
 
-**Člani skupine:** Berenard Kučina, Filip Merkan
+**Člani skupine:** Bernard Kučina, Filip Merkan
 
 ---
 
 ## Kratek opis projekta
 
-Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Papir" ki je objavljena v GitHub repozitoriju https://github.com/bernardkucina/Kamen-skarje-papir-projektna-naloga v sodobno cloud native arhitekturo z uporabo mikro storitev. Trenutna aplikacija, ki podpira dve različici igre (klasično KSP in razširjeno KSPOV z Ogenj/Voda), bo razdeljena na 4 neodvisnih mikro storitev, ki bodo omogočale boljšo skalabilnost, vzdrževanje in razširljivost. Rešitev bo rešila probleme monolitne arhitekture, kot so težko vzdrževanje, omejena skalabilnost in tesno povezanost komponent, ter zagotovila visoko dostopnost in odpornost na napake.
+Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Papir" ki je objavljena v GitHub repozitoriju https://github.com/bernardkucina/Kamen-skarje-papir-projektna-naloga v sodobno cloud native arhitekturo z uporabo mikro storitev. Trenutna aplikacija, ki podpira dve različici igre (klasično KŠP in razširjeno KŠPOV z Ogenj/Voda), bo razdeljena na 4 neodvisnih mikro storitev, ki bodo omogočale boljšo skalabilnost, vzdrževanje in razširljivost. Rešitev bo rešila probleme monolitne arhitekture, kot so težko vzdrževanje, omejena skalabilnost in tesno povezanost komponent, ter zagotovila visoko dostopnost in odpornost na napake.
 
 ---
 
 ## Ogrodje in razvojno okolje
 
 ### Tehnologije in ogrodja:
-- **Backend:** Python 3.11+ (FastAPI), Bottle (za migracijo)
+- **Backend:** Python 3.11+ (Hypercorn), Bottle (za migracijo)
 - **Baze podatkov:** PostgreSQL (trajno shranjevanje), Redis (seje)
 - **Containerizacija:** Docker, Docker Compose
 - **Orkestracija:** Kubernetes
-- **Komunikacija:** REST API, gRPC (za notranje storitve)
+- **Komunikacija:** REST API
 - **Avtentikacija:** JWT, OAuth 2.0 integracija
 - **Monitoring:** Prometheus
 - **CI/CD:** GitHub Actions
@@ -37,11 +37,11 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 
 ## Shema arhitekture
 
-![Arhitekturna shema mikro storitev](mermaid_diagram.png)
+![Arhitekturna shema mikro storitev](medmaid_diagram.png)
 
 ### Komunikacijski protokoli:
 - **API Gateway ↔ Storitve:** HTTP/HTTPS (REST)
-- **Storitve ↔ Storitve:** gRPC (notranja komunikacija)
+- **Storitve ↔ Storitve:** HTTP (notranja komunikacija)
 - **Session ↔ Game Engine:** HTTP (synchronous)
 - **Session ↔ History:** HTTP (asynchronous)
 - **Auth ↔ OAuth Provider:** OAuth 2.0 protokol
@@ -77,7 +77,6 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 **API Endpoints:**
 - `POST /game/ksp/play` - Igra KSP poteze
 - `POST /game/kspov/play` - Igra KSPOV poteze
-- `GET /game/rules` - Pravila igre
 
 ### 3. SESSION SERVICE
 **Funkcionalnosti:**
