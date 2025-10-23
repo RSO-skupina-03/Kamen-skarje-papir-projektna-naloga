@@ -37,7 +37,7 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 
 ## Shema arhitekture
 
-![Arhitekturna shema mikro storitev](Mermaid%20Chart%20-%20Create%20complex%2C%20visual%20diagrams%20with%20text.-2025-10-23-115948.png)
+![Arhitekturna shema mikro storitev](mermaid_diagram.png)
 
 ### Komunikacijski protokoli:
 - **API Gateway ↔ Storitve:** HTTP/HTTPS (REST)
