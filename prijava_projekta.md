@@ -6,6 +6,8 @@
 
 **Člani skupine:** Bernard Kučina, Filip Merkan
 
+**Repozitori:** https://github.com/bernardkucina/Kamen-skarje-papir-projektna-naloga
+
 ---
 
 ## Kratek opis projekta
