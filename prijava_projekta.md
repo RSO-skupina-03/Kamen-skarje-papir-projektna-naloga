@@ -6,13 +6,13 @@
 
 **Člani skupine:** Bernard Kučina, Filip Merkan
 
-**Repozitori:** https://github.com/bernardkucina/Kamen-skarje-papir-projektna-naloga
+**Repozitori organizacije:** https://github.com/bernardkucina/Kamen-skarje-papir-projektna-naloga
 
 ---
 
 ## Kratek opis projekta
 
-Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Papir" ki je objavljena v GitHub repozitoriju https://github.com/bernardkucina/Kamen-skarje-papir-projektna-naloga v sodobno cloud native arhitekturo z uporabo mikro storitev. Trenutna aplikacija, ki podpira dve različici igre (klasično KŠP in razširjeno KŠPOV z Ogenj/Voda), bo razdeljena na 4 neodvisnih mikro storitev, ki bodo omogočale boljšo skalabilnost, vzdrževanje in razširljivost. Rešitev bo rešila probleme monolitne arhitekture, kot so težko vzdrževanje, omejena skalabilnost in tesno povezanost komponent, ter zagotovila visoko dostopnost in odpornost na napake.
+Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Papir" ki je objavljena v [GitHub repozitoriju](https://github.com/bernardkucina/Kamen-skarje-papir-projektna-naloga) v sodobno cloud native arhitekturo z uporabo mikro storitev. Trenutna aplikacija, ki podpira dve različici igre (klasično KŠP in razširjeno KŠPOV z Ogenj/Voda), bo razdeljena na 4 neodvisnih mikro storitev, ki bodo omogočale boljšo skalabilnost, vzdrževanje in razširljivost. Rešitev bo rešila probleme monolitne arhitekture, kot so težko vzdrževanje, omejena skalabilnost in tesno povezanost komponent, ter zagotovila visoko dostopnost in odpornost na napake.
 
 ---
 
