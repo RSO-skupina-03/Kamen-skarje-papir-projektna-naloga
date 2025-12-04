@@ -7,50 +7,14 @@ from bottle import request, response
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 from hypercorn.middleware import AsyncioWSGIMiddleware
-from ldap3 import Server, Connection, ALL
 
 load_dotenv()
 
 ID_IGRE_COKOLADNI_PISKOT = "id_igre"
 STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 
-LDAP_HOST       = os.environ["LDAP_HOST"]
-LDAP_PORT       = int(os.environ["LDAP_PORT"])
-LDAP_USER_BASE  = os.environ["LDAP_USER_BASE"] 
-LDAP_GROUP_BASE = os.environ["LDAP_GROUP_BASE"]
-
 ksp = model.KSP()
 kspov = model.KSPOV()
-
-def ldap_authenticate_and_get_info(uid: str, password: str):
-    srv = Server(LDAP_HOST, port=LDAP_PORT,get_info=ALL) 
-    # 1) Anonymous bind just to look up the user's DN
-    anon = Connection(srv, auto_bind=True)
-    anon.search(search_base = LDAP_USER_BASE, search_filter = f"(uid={uid})")
-    if not anon.entries:
-        anon.unbind()
-        return None
-    user_dn = anon.entries[0].entry_dn
-    anon.unbind()
-
-    # Bind as the user to verify the password
-    try:
-        user_conn = Connection(srv, user=user_dn, password=password, auto_bind=True)
-    except Exception:
-        # invalid credentials
-        return None
-     
-    # Now that we're bound as the user, fetch their cn & sn
-    user_conn.search(search_base   = user_dn, search_filter = "(objectClass=inetOrgPerson)", attributes = ["cn","sn"])
-    entry = user_conn.entries[0]
-    cn = entry.cn.value
-    sn = entry.sn.value
-
-    # Still on the same connection, search for their groups
-    user_conn.search(search_base   = LDAP_GROUP_BASE, search_filter = f"(member={user_dn})", attributes = ["cn"])
-    groups = [g.cn.value for g in user_conn.entries]    
-    user_conn.unbind()
-    return {"cn": cn, "sn": sn, "groups": groups}
 
 @bottle.error(404)
 def error404(error):
@@ -112,17 +76,20 @@ def prijava():
         if user == "Gost" or user == "":
             uporabnik = "Gost"
             sub = json.dumps(['non-subscribers'])
-        else:
-            info = ldap_authenticate_and_get_info(user, password)
-
-            if info is None:
-                response.status = 303
-                response.set_header("Location", "/?valid=0")
-                return
-            
-            print(info["cn"] + " " + info["sn"] + " " + json.dumps(info["groups"]))
-            uporabnik = info["cn"] + " " + info["sn"]
-            sub = json.dumps(info["groups"])
+        # Tukaj dodaj logiko za OAuth2 avtentikacijo
+        #else:
+        #
+        #    
+        #    info = ldap_authenticate_and_get_info(user, password)
+        #    
+        #    if info is None:
+        #        response.status = 303
+        #        response.set_header("Location", "/?valid=0")
+        #        return
+        #    
+        #    print(info["cn"] + " " + info["sn"] + " " + json.dumps(info["groups"]))
+        #    uporabnik = info["cn"] + " " + info["sn"]
+        #    sub = json.dumps(info["groups"])
 
     
         bottle.response.set_cookie("uporabnik", uporabnik, path='/',secret=STARI_SLOVENSKI_PREGOVOR)

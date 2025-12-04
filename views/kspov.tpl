@@ -32,9 +32,9 @@
 
         <div class="gumbi">
             <button type="submit" class="potrdi">Potrdi</button>
-            % if is_subscriber == True:
-            <button type="button" class="potrdi" onclick="window.location.href='/zgodovina_kspov/'">Zgodovina</button>
             <button type="button" class="potrdi" onclick="window.location.href='/end/'">Nazaj</button>
+            % if is_subscriber == True:
+            <!--<button type="button" class="potrdi" onclick="window.location.href='/zgodovina_kspov/'">Zgodovina</button>-->
             % end
         </div>
     </form>

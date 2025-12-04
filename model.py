@@ -1,9 +1,9 @@
 import os
 import json
-import psycopg2
+# import psycopg2
 from random import randint
 from dotenv import load_dotenv
-from psycopg2 import Error
+# from psycopg2 import Error
 
 load_dotenv()
 DB_URL = os.environ["DB_URL"]
@@ -220,90 +220,94 @@ class KSP(Datoteka):
             }
         else:
             self.igre = {}
-
-    def insert_game_ksp(self, game_id, player_score, computer_score):
-        connection = psycopg2.connect(DB_URL)
-        cursor = connection.cursor()
-
-        upsert_sql = """
-            INSERT INTO ksp (username, game_id, player, computer)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (username, game_id) DO UPDATE
-                SET player   = EXCLUDED.player,
-                    computer = EXCLUDED.computer
-            """
-        cursor.execute(upsert_sql, (self.uporabnik, game_id, player_score, computer_score))
-
-        connection.commit()
-        cursor.close()
-        connection.close()
-        print("Data loaded into ksp.")
     
-    def get_id_ksp(self):
-        conn = psycopg2.connect(DB_URL)
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT MAX(game_id) FROM ksp WHERE username = %s",
-                    (self.uporabnik,)
-                )
-                row = cur.fetchone()
-                max_id = row[0]
-                if max_id is not None:
-                    self.id = row[0]
-                else:
-                    self.id = 0
-        finally:
-            conn.close()
+    # To funkcijo je treba updatetati na novo podatkovno bazo
+    #def insert_game_ksp(self, game_id, player_score, computer_score):
+    #    connection = psycopg2.connect(DB_URL)
+    #    cursor = connection.cursor()
+    #
+    #    upsert_sql = """
+    #        INSERT INTO ksp (username, game_id, player, computer)
+    #        VALUES (%s, %s, %s, %s)
+    #        ON CONFLICT (username, game_id) DO UPDATE
+    #            SET player   = EXCLUDED.player,
+    #                computer = EXCLUDED.computer
+    #        """
+    #    cursor.execute(upsert_sql, (self.uporabnik, game_id, player_score, computer_score))
+    #
+    #    connection.commit()
+    #    cursor.close()
+    #    connection.close()
+    #    print("Data loaded into ksp.")
+    
+    # Treba je updatetati na novo podatkovno bazo
+    #def get_id_ksp(self):
+    #    conn = psycopg2.connect(DB_URL)
+    #    try:
+    #        with conn.cursor() as cur:
+    #            cur.execute(
+    #                "SELECT MAX(game_id) FROM ksp WHERE username = %s",
+    #                (self.uporabnik,)
+    #            )
+    #            row = cur.fetchone()
+    #            max_id = row[0]
+    #            if max_id is not None:
+    #                self.id = row[0]
+    #            else:
+    #                self.id = 0
+    #    finally:
+    #        conn.close()
 
-    def load_user_history_ksp(self):
-        conn = psycopg2.connect(DB_URL)
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    """
-                    SELECT game_id, player, computer
-                    FROM ksp
-                    WHERE username = %s
-                    ORDER BY game_id
-                    """,
-                    (self.uporabnik,)
-                )
-                rows = cur.fetchall()
+    # Treba je upadtetati na novo podatkovno bazo
+    #def load_user_history_ksp(self):
+    #    conn = psycopg2.connect(DB_URL)
+    #    try:
+    #        with conn.cursor() as cur:
+    #            cur.execute(
+    #                """
+    #                SELECT game_id, player, computer
+    #                FROM ksp
+    #                WHERE username = %s
+    #                ORDER BY game_id
+    #                """,
+    #                (self.uporabnik,)
+    #            )
+    #            rows = cur.fetchall()
+    #
+    #        user_games = {
+    #            str(gid): [player, computer]
+    #            for gid, player, computer in rows
+    #        }
+    #
+    #        with open(DATOTEKA_KSP, "r", encoding="utf-8") as f:
+    #                try:
+    #                    all_data = json.load(f)
+    #                except json.JSONDecodeError:
+    #                    all_data = {}
+    #
+    #        existing = all_data.get(self.uporabnik, {})
+    #        existing.update(user_games)
+    #        all_data[self.uporabnik] = existing
+    #
+    #        with open(DATOTEKA_KSP, "w", encoding="utf-8") as f:
+    #            json.dump(all_data, f, indent=2, ensure_ascii=False)
+    #
+    #    finally:
+    #        conn.close()
 
-            user_games = {
-                str(gid): [player, computer]
-                for gid, player, computer in rows
-            }
-
-            with open(DATOTEKA_KSP, "r", encoding="utf-8") as f:
-                    try:
-                        all_data = json.load(f)
-                    except json.JSONDecodeError:
-                        all_data = {}
-
-            existing = all_data.get(self.uporabnik, {})
-            existing.update(user_games)
-            all_data[self.uporabnik] = existing
-
-            with open(DATOTEKA_KSP, "w", encoding="utf-8") as f:
-                json.dump(all_data, f, indent=2, ensure_ascii=False)
-
-        finally:
-            conn.close()
-
-    def delete_ksp(self):
-        conn = psycopg2.connect(DB_URL)
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "DELETE FROM ksp WHERE username = %s",
-                    (self.uporabnik,)
-                )
-            conn.commit()
-            self.id = 0
-        finally:
-            conn.close()
+    # Treba je upadtetati na novo podatkovno bazo
+    #def delete_ksp(self):
+    #    conn = psycopg2.connect(DB_URL)
+    #    try:
+    #        with conn.cursor() as cur:
+    #            cur.execute(
+    #                "DELETE FROM ksp WHERE username = %s",
+    #                (self.uporabnik,)
+    #            )
+    #        conn.commit()
+    #        self.id = 0
+    #    finally:
+    #        conn.close()
         
 #=========================================================================================================================================================
 
@@ -361,85 +365,88 @@ class KSPOV(Datoteka):
             }
         else:
             self.igre = {}
+    # Treba je upadtetati na novo podatkovno bazo
+    #def insert_game_kspov(self, game_id, player_score, computer_score):
+    #    connection = psycopg2.connect(DB_URL)
+    #    cursor = connection.cursor()
+    #
+    #    upsert_sql = """
+    #        INSERT INTO kspov (username, game_id, player, computer)
+    #        VALUES (%s, %s, %s, %s)
+    #        ON CONFLICT (username, game_id) DO UPDATE
+    #            SET player   = EXCLUDED.player,
+    #                computer = EXCLUDED.computer
+    #        """
+    #    cursor.execute(upsert_sql, (self.uporabnik, game_id, player_score, computer_score))
+    #
+    #    connection.commit()
+    #    cursor.close()
+    #    connection.close()
+    #    print("Data loaded into kspov.")
 
-    def insert_game_kspov(self, game_id, player_score, computer_score):
-        connection = psycopg2.connect(DB_URL)
-        cursor = connection.cursor()
+    # Treba je upadtetati na novo podatkovno bazo
+    #def get_id_kspov(self):
+    #    conn = psycopg2.connect(DB_URL)
+    #    try:
+    #        with conn.cursor() as cur:
+    #            cur.execute(
+    #                "SELECT MAX(game_id) FROM kspov WHERE username = %s",
+    #                (self.uporabnik,)
+    #            )
+    #            row = cur.fetchone()
+    #            max_id = row[0]
+    #            if max_id is not None:
+    #                self.id = row[0]
+    #            else:
+    #                self.id = 0
+    #    finally:
+    #        conn.close()
 
-        upsert_sql = """
-            INSERT INTO kspov (username, game_id, player, computer)
-            VALUES (%s, %s, %s, %s)
-            ON CONFLICT (username, game_id) DO UPDATE
-                SET player   = EXCLUDED.player,
-                    computer = EXCLUDED.computer
-            """
-        cursor.execute(upsert_sql, (self.uporabnik, game_id, player_score, computer_score))
+    # Treba je upadtetati na novo podatkovno bazo
+    #def load_user_history_kspov(self):
+    #    conn = psycopg2.connect(DB_URL)
+    #    try:
+    #        with conn.cursor() as cur:
+    #            cur.execute(
+    #            """
+    #             SELECT game_id, player, computer
+    #             FROM kspov
+    #             WHERE username = %s
+    #             ORDER BY game_id
+    #            """,
+    #            (self.uporabnik,)
+    #            )
+    #            rows = cur.fetchall()
+    #        user_games = { str(gid): [player, computer] for gid, player, computer in rows }
+    #
+    #        with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as f:
+    #            try:
+    #                all_data = json.load(f)
+    #            except json.JSONDecodeError:
+    #                all_data = {}
+    #            
+    #        existing = all_data.get(self.uporabnik, {})
+    #        existing.update(user_games)         # add/overwrite only those game_ids
+    #        all_data[self.uporabnik] = existing
+    #
+    #        with open(DATOTEKA_KSPOV, "w", encoding="utf-8") as f:
+    #            json.dump(all_data, f, indent=2, ensure_ascii=False)
+    #    finally:
+    #        conn.close()
 
-        connection.commit()
-        cursor.close()
-        connection.close()
-        print("Data loaded into kspov.")
-
-    def get_id_kspov(self):
-        conn = psycopg2.connect(DB_URL)
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "SELECT MAX(game_id) FROM kspov WHERE username = %s",
-                    (self.uporabnik,)
-                )
-                row = cur.fetchone()
-                max_id = row[0]
-                if max_id is not None:
-                    self.id = row[0]
-                else:
-                    self.id = 0
-        finally:
-            conn.close()
-
-    def load_user_history_kspov(self):
-        conn = psycopg2.connect(DB_URL)
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                """
-                 SELECT game_id, player, computer
-                 FROM kspov
-                 WHERE username = %s
-                 ORDER BY game_id
-                """,
-                (self.uporabnik,)
-                )
-                rows = cur.fetchall()
-            user_games = { str(gid): [player, computer] for gid, player, computer in rows }
-
-            with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as f:
-                try:
-                    all_data = json.load(f)
-                except json.JSONDecodeError:
-                    all_data = {}
-                
-            existing = all_data.get(self.uporabnik, {})
-            existing.update(user_games)         # add/overwrite only those game_ids
-            all_data[self.uporabnik] = existing
-
-            with open(DATOTEKA_KSPOV, "w", encoding="utf-8") as f:
-                json.dump(all_data, f, indent=2, ensure_ascii=False)
-        finally:
-            conn.close()
-
-    def delete_kspov(self):
-        conn = psycopg2.connect(DB_URL)
-        try:
-            with conn.cursor() as cur:
-                cur.execute(
-                    "DELETE FROM kspov WHERE username = %s",
-                    (self.uporabnik,)
-                )
-            conn.commit()
-            self.id = 0
-        finally:
-            conn.close()
+    # Treba je upadtetati na novo podatkovno bazo
+    #def delete_kspov(self):
+    #    conn = psycopg2.connect(DB_URL)
+    #    try:
+    #        with conn.cursor() as cur:
+    #            cur.execute(
+    #                "DELETE FROM kspov WHERE username = %s",
+    #                (self.uporabnik,)
+    #            )
+    #        conn.commit()
+    #        self.id = 0
+    #    finally:
+    #        conn.close()
 
 #pomembno je da beležim rezultat igre in sicer to lahko shranim v datoteko kot {id_igre: [igralec, racunalnik]
 
