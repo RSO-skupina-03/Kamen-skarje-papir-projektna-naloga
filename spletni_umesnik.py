@@ -6,7 +6,6 @@ import threading
 from bottle import request, response
 import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
-from hypercorn.middleware import AsyncioWSGIMiddleware
 
 load_dotenv()
 
@@ -388,6 +387,9 @@ def zgodovina_xml():
 
 app = bottle.default_app()
 
+if __name__ == "__main__":
+    bottle.run(app=app, host="0.0.0.0", port=8000, debug=True, reloader=True)
+
 # @app.hook('after_request')
 # def advertise_http3():
     # xresponse.set_header('Alt-Svc', 'h3=":4433"; h3-29=":4433"; ma=86400')
@@ -408,4 +410,4 @@ app = bottle.default_app()
 # response.set_cookie("uporabnik", uporabnik, secret=STARI_SLOVENSKI_PREGOVOR, path="/", secure=True, httponly=True)
 # da ga brskalik lahko pošilja le po HTTPS povezavi
 
-asgi_app = AsyncioWSGIMiddleware(app)
+# asgi_app = AsyncioWSGIMiddleware(app)

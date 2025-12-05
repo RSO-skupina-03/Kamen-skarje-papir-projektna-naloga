@@ -80,9 +80,6 @@ sudo ss -nulp | grep :161
 sudo apt-get install snmp-mibs-downloader
 snmpwalk -c public -v 2c 127.0.0.1
 
-
-
-
 # How to run application (http/1.1, http/2, http/3)
 hypercorn --config conf/hypercornAll.toml   spletni_umesnik:asgi_app
 
@@ -90,5 +87,17 @@ hypercorn --config conf/hypercornAll.toml   spletni_umesnik:asgi_app
 hypercorn --config conf/hypercornBase.toml   spletni_umesnik:asgi_app
 
 # How to run application (http/1.1)
-hypercorn --config conf/hypercornDep.toml   spletni_umesnik:app
+hypercorn --config conf/hypercornDep.toml   spletni_umesnik:asgi_app
+
+# Docker instalation
+apt-get update
+apt-get install -y python3 python3-pip
+apt install python3.12-venv
+python3 -m venv .venv
+source .venv/bin/activate
+
+pip install bottle
+pip install hypercorn
+pip install python-dotenv
+
 
