@@ -133,5 +133,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 http3_client.py
-certs/
 # ignore real TLS certs
