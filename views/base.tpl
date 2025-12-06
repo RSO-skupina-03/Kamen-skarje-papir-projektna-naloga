@@ -4,7 +4,6 @@
     <title>KAMEN ŠKARJE PAPIR</title>
     <meta charset="UTF-8">
     <link rel="stylesheet" href="/static/style.css">
-    <script src="/static/script.js" defer></script>
 </head>
 <body>
     <nav>
@@ -14,6 +13,6 @@
         {{!base}}
     </div>
 
-    <!-- Tukaj dodamo še javascript-->
+    <script src="/static/script.js"></script>
 </body>
 </html>

@@ -5,17 +5,18 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y python3 python3-pip python3.12-venv 
 
 RUN python3 -m venv .venv \
+ && .venv/bin/pip install --no-cache-dir --upgrade pip \
  && .venv/bin/pip install --no-cache-dir \
-    bottle python-dotenv
+    bottle>=0.12.25 \
+    python-dotenv>=1.0.0
 
 COPY datoteke/ datoteke/
 COPY static/ static/
 COPY views/ views/
 COPY model.py model.py
 COPY spletni_umesnik.py spletni_umesnik.py
-COPY .env .env
 
 EXPOSE 8000
 
 ENV PATH="/app/.venv/bin:$PATH"
-CMD ["python", "spletni_umesnik.py"]
+CMD ["python3", "spletni_umesnik.py"]

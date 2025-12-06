@@ -1,4 +1,9 @@
+# macOS system files
+.DS_Store
+
 datoteke/
+azure/
+k8s/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

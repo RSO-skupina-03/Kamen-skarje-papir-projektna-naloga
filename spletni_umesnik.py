@@ -31,6 +31,75 @@ def error500(error):
 def server_static(filepath):
     return bottle.static_file(filepath, root='static')
 
+@bottle.route('/health', method=['GET', 'HEAD'])
+def health_check():
+    """Liveness probe - checks if the application is alive"""
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+    response.content_type = 'application/json'
+    return json.dumps({"status": "healthy", "service": "ksp-app"})
+
+@bottle.route('/ready', method=['GET', 'HEAD'])
+def readiness_check():
+    """Readiness probe - checks if the application is ready to serve traffic"""
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+    
+    # Check required environment variables
+    checks = {
+        "status": "ready",
+        "service": "ksp-app",
+        "checks": {}
+    }
+    
+    # Check if required environment variables are set
+    try:
+        session_secret = os.environ.get("SESSION_COOKIE_SECRET")
+        db_url = os.environ.get("DB_URL")
+        
+        checks["checks"]["environment"] = {
+            "SESSION_COOKIE_SECRET": "ok" if session_secret else "missing",
+            "DB_URL": "ok" if db_url else "missing"
+        }
+        
+        # Check if data directory is writable
+        try:
+            datoteke_dir = 'datoteke'
+            if not os.path.exists(datoteke_dir):
+                os.makedirs(datoteke_dir, exist_ok=True)
+            # Try to write a test file
+            test_file = os.path.join(datoteke_dir, '.health_check')
+            with open(test_file, 'w') as f:
+                f.write('ok')
+            os.remove(test_file)
+            checks["checks"]["filesystem"] = "ok"
+        except Exception as e:
+            checks["checks"]["filesystem"] = f"error: {str(e)}"
+        
+        # Determine overall readiness
+        all_ok = (
+            session_secret and 
+            db_url and 
+            checks["checks"]["filesystem"] == "ok"
+        )
+        
+        if all_ok:
+            response.status = 200
+            checks["status"] = "ready"
+        else:
+            response.status = 503  # Service Unavailable
+            checks["status"] = "not ready"
+            
+    except Exception as e:
+        response.status = 503
+        checks["status"] = "error"
+        checks["error"] = str(e)
+    
+    response.content_type = 'application/json'
+    return json.dumps(checks, indent=2)
+
 @bottle.route('/', method=['GET','HEAD'])
 def zacetni_menu():
     if request.method == 'HEAD':
