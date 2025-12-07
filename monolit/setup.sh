@@ -2,12 +2,14 @@
 python3 -m venv .venv
 source .venv/bin/activate
 
+
 # Done
 deactivate
 
 pip install bottle #for REST API
 pip install gunicorn # for handling http connection
 pip install python-dotenv # for shared secrets
+pip install requests
 
 # For testing http/3 with self-signed certificate
 curl -Lo http3_client.py \
