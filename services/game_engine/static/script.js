@@ -2,7 +2,7 @@ function Uporabnik() {
     
     var user = document.getElementById("uporabnik").value;
     var pass = document.getElementById("password").value;
-    fetch("/login/", {
+    fetch("/zacetni_menu/", {
         method: "PUT", 
         body: JSON.stringify({ uporabnik: user, password: pass}),
         headers: { "Content-Type": "application/json" }
@@ -17,7 +17,7 @@ function Uporabnik() {
 
 function Gost() {
 
-    fetch("/login/", {
+    fetch("/zacetni_menu/", {
         method: "PUT", 
         body: JSON.stringify({ uporabnik: "Gost" }),
         headers: { "Content-Type": "application/json" }

@@ -102,7 +102,7 @@ def readiness_check():
     return json.dumps(checks, indent=2)
 
 @bottle.route('/', method=['GET','HEAD'])
-def zacetni_menu():
+def login():
     if request.method == 'HEAD':
         response.status = 200
         return
@@ -110,8 +110,8 @@ def zacetni_menu():
         valid = request.query.get("valid","1") != "0"
         return bottle.template('views/log.tpl', valid=valid)
 
-@bottle.route('/end/', method=['GET','HEAD'])
-def zacetni_menu():
+@bottle.route('/igra/', method=['GET','HEAD'])
+def igra():
     if request.method == 'HEAD':
         response.status = 200
         return
@@ -122,20 +122,20 @@ def zacetni_menu():
             response.set_header("Location", "/")
             return
         else:
-            return bottle.template('views/zacetni_menu.tpl', uporabnik=uporabnik.upper())
+            return bottle.template('views/igra.tpl', uporabnik=uporabnik.upper())
         
-@bottle.route('/zacetni_menu/', method=['OPTIONS'])
-def zacetni_menu_preflight():
+@bottle.route('/login/', method=['OPTIONS'])
+def login_preflight():
     response.set_header('Access-Control-Allow-Origin',  '*')
     response.set_header('Access-Control-Allow-Methods', 'PUT, OPTIONS')
     response.set_header('Access-Control-Allow-Headers', 'Content-Type')
     return
 
-@bottle.route("/zacetni_menu/", method=["PUT","HEAD"])
-def prijava():
+@bottle.route("/login/", method=["PUT","HEAD"])
+def login():
     if request.method == "HEAD":
         response.status = 303
-        response.set_header("Location", "/end/")
+        response.set_header("Location", "/igra/")
         return
     else:
         user = bottle.request.json.get("uporabnik")
@@ -185,7 +185,7 @@ def prijava():
         kspov.preberi_iz_datoteke()
 
         response.status = 303
-        response.set_header("Location", "/end/")
+        response.set_header("Location", "/igra/")
         return
 
 #================================================================================================================================================
