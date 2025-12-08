@@ -1,4 +1,3 @@
-%import model
 %rebase('views/base.tpl')
 
 <h3>KAMEN ŠKARJE PAPIR OGENJ VODA</h3>
@@ -54,7 +53,7 @@
 </div>
 %end
 
-% if igra.zmaga_racunalnika_1() == True:
+% if igra['zmaga_racunalnika'] == True:
 <div class="center">
     <div class="content">
         <div class="glava poraz">

@@ -1,4 +1,3 @@
-%import model
 %rebase('views/base.tpl')
 <h3>KAMEN ŠKARJE PAPIR</h3>
 <BLOckquote>
