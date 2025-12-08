@@ -3,50 +3,120 @@ import json
 import bottle
 import threading
 import model
-import requests
 from bottle import request, response
-import xml.etree.ElementTree as ET
 from dotenv import load_dotenv
 
 load_dotenv()
-
-ID_IGRE_COKOLADNI_PISKOT = "id_igre"
-STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 DB_URL = os.environ["DB_URL"]
 
 ksp = model.KSP()
 kspov = model.KSPOV()
 
-# Za testiranje ----------------------
-#@bottle.route('/', method=['GET','HEAD'])
-#def root():
-#    if request.method == 'HEAD':
-#        response.status = 200
-#        return
-#    response.status = 303
-#    response.set_header("Location", "/igra/")
-#    return
-## Za testiranje ----------------------
-#
-#@bottle.route('/igra/', method=['GET','HEAD'])
-#def igra():
-#    if request.method == 'HEAD':
-#        response.status = 200
-#        return
-#    else:
-#        uporabnik = bottle.request.get_cookie("uporabnik", secret=STARI_SLOVENSKI_PREGOVOR)
-#        # Za testiranje ----------------------
-#        if uporabnik is None:
-#            uporabnik = "Gost"
-#        # Za testiranje ----------------------
-#        
-#        # ZA POTREBE TESTIRANJA ZAKOMENTIRANO
-#        # if uporabnik is None:
-#        #     response.status = 303
-#        #     response.set_header("Location", "/")
-#        #     return
-#        # else:
-#        return bottle.template('views/igra.tpl', uporabnik=uporabnik.upper())
+@bottle.route('/health', method=['GET', 'HEAD'])
+def health_check():
+    """Liveness probe - checks if the application is alive"""
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+    response.content_type = 'application/json'
+    return json.dumps({"status": "healthy", "service": "ksp-game-engine"})
+
+@bottle.route('/ready', method=['GET', 'HEAD'])
+def readiness_check():
+    """Readiness probe - checks if the application is ready to serve traffic"""
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+    
+    # Check required environment variables
+    checks = {
+        "status": "ready",
+        "service": "ksp-game-engine",
+        "checks": {}
+    }
+    
+    # Check if required environment variables are set
+    try:
+        db_url = os.environ.get("DB_URL")
+        
+        checks["checks"]["environment"] = {
+            "DB_URL": "ok" if db_url else "missing"
+        }
+        
+        # Check if data directory is writable
+        try:
+            datoteke_dir = 'datoteke'
+            if not os.path.exists(datoteke_dir):
+                os.makedirs(datoteke_dir, exist_ok=True)
+            # Try to write a test file
+            test_file = os.path.join(datoteke_dir, '.health_check')
+            with open(test_file, 'w') as f:
+                f.write('ok')
+            os.remove(test_file)
+            checks["checks"]["filesystem"] = "ok"
+        except Exception as e:
+            checks["checks"]["filesystem"] = f"error: {str(e)}"
+        
+        # Determine overall readiness
+        all_ok = (
+            db_url and 
+            checks["checks"]["filesystem"] == "ok"
+        )
+        
+        if all_ok:
+            response.status = 200
+            checks["status"] = "ready"
+        else:
+            response.status = 503  # Service Unavailable
+            checks["status"] = "not ready"
+            
+    except Exception as e:
+        response.status = 503
+        checks["status"] = "error"
+        checks["error"] = str(e)
+    
+    response.content_type = 'application/json'
+    return json.dumps(checks, indent=2)
+
+@bottle.post("/ksp/init_user")
+def init_user():
+    data = request.json or {}
+
+    user = data.get("uporabnik") or "Gost"
+    is_subscriber = bool(data.get("is_subscriber"))
+
+    # Nastavi uporabnika v modelih
+    ksp.nastavi_uporabnika(user)
+    kspov.nastavi_uporabnika(user)
+
+    if is_subscriber:
+        kspov.get_id_kspov()
+        ksp.get_id_ksp()
+
+        # ➜ popravljen threading: target=..., brez klica ()
+        threading.Thread(
+            target=ksp.load_user_history_ksp,
+            daemon=True,
+        ).start()
+        threading.Thread(
+            target=kspov.load_user_history_kspov,
+            daemon=True,
+        ).start()
+    else:
+        ksp.nastavi_id(len(ksp.igre))
+        kspov.nastavi_id(len(kspov.igre))
+
+    # po želji vrneš ID-je, če jih frontend kdaj rabi
+    payload = {
+        "status": "ok",
+        "user": user,
+        "is_subscriber": is_subscriber,
+        "ksp_id": getattr(ksp, "id", None),
+        "kspov_id": getattr(kspov, "id", None),
+    }
+
+    response.content_type = "application/json"
+    return json.dumps(payload)
 
 #================================================================================================================================================
 
@@ -197,7 +267,7 @@ def kspov_move_api():
     is_subscriber = bool(data.get("is_subscriber"))
 
     # 1) izvede potezo na modelu
-    kspov.potek_igre(id_igre, orozje)
+    kspov.potek_igre_1(id_igre, orozje)
 
     # 2) vrne morda samo OK (frontend bo itak še enkrat klical /kspov/state)
     response.content_type = "application/json"
