@@ -1,0 +1,155 @@
+import os, hashlib, os
+from urllib.parse import urlencode
+import requests
+import bottle
+import json
+from bottle import request, response, HTTPError
+from dotenv import load_dotenv
+from google.oauth2 import id_token as google_id_token
+from google.auth.transport import requests as google_requests
+
+load_dotenv()
+
+HOST_BASE = os.environ["HOST_BASE"]
+SCOPES = ["openid", "profile", "email"]
+STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
+GAME_ENGINE_URL = os.environ["GAME_ENGINE_URL"]
+FRONTEND_URL = os.environ["FRONTEND_URL"]
+
+SECRETS = {
+    "client_id":     os.environ["GOOGLE_CLIENT_ID"],
+    "client_secret": os.environ["GOOGLE_CLIENT_SECRET"],
+    "auth_uri":      "https://accounts.google.com/o/oauth2/v2/auth",
+    "token_uri":     "https://oauth2.googleapis.com/token",
+    "redirect_uris": [f"{HOST_BASE}/auth/google/callback"],
+}
+
+
+GOOGLE_CLIENT_ID = SECRETS["client_id"]
+
+STATE_STORE = {}  # state -> True (simple in-memory CSRF cache)
+
+def build_authorization_url(secrets: dict, redirect_uri: str) -> tuple[str, str]:
+    state = hashlib.sha256(os.urandom(32)).hexdigest()
+    params = {
+        "response_type": "code",
+        "client_id": secrets["client_id"],
+        "redirect_uri": redirect_uri,
+        "scope": " ".join(SCOPES),
+        "state": state,
+        # Recommended for refresh tokens:
+        "access_type": "offline",
+        "include_granted_scopes": "true",
+        "prompt": "consent",
+    }
+    return f"{secrets['auth_uri']}?{urlencode(params)}", state
+
+@bottle.get("/auth/google/login")
+def google_login():
+    redirect_uri = SECRETS["redirect_uris"][0]
+    # where to go after successful login
+    redirect_to = request.query.get("redirect_to", f"{FRONTEND_URL}/igra")
+
+    url, state = build_authorization_url(SECRETS, redirect_uri)
+    # store redirect target with the state
+    STATE_STORE[state] = {"redirect_to": redirect_to}
+    response.status = 302
+    response.set_header("Location", url)
+    return ""
+
+def exchange_code_for_tokens(secrets: dict, redirect_uri: str, code: str) -> dict:
+    data = {
+        "grant_type": "authorization_code",
+        "client_id": secrets["client_id"],
+        "client_secret": secrets["client_secret"],
+        "redirect_uri": redirect_uri,
+        "code": code,
+    }
+    r = requests.post(
+        secrets["token_uri"],
+        data=data,
+        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        timeout=10,
+    )
+    if r.status_code != 200:
+        raise HTTPError(r.status_code, f"Token exchange failed: {r.text}")
+    return r.json()
+
+
+def verify_google_id_token(id_token_str: str) -> dict:
+    """
+    Verify signature and standard claims for Google's ID Token.
+    Checks issuer, audience, exp/iat automatically.
+    """
+    try:
+        req = google_requests.Request()
+        claims = google_id_token.verify_oauth2_token(
+            id_token_str, req, GOOGLE_CLIENT_ID
+        )
+        # Extra hardening (issuer can be either form):
+        if claims.get("iss") not in ("accounts.google.com", "https://accounts.google.com"):
+            raise HTTPError(401, "Bad issuer")
+        return claims
+    except Exception as e:
+        raise HTTPError(401, f"Invalid ID token: {e}")
+
+def json_utf8(payload: dict):
+    """Return UTF-8 JSON (no ASCII escaping) so names are preserved."""
+    response.content_type = "application/json; charset=utf-8"
+    return json.dumps(payload, ensure_ascii=False)
+
+@bottle.get("/auth/google/callback")
+def google_callback():
+    code  = request.query.get("code")
+    state = request.query.get("state")
+    if not code or not state:
+        raise HTTPError(400, "Missing code or state")
+
+    ctx = STATE_STORE.pop(state, None)
+    if not ctx:
+        raise HTTPError(400, "Invalid or expired state")
+    redirect_to = ctx.get("redirect_to", f"{FRONTEND_URL}/igra")
+
+    redirect_uri = SECRETS["redirect_uris"][0]
+    tokens = exchange_code_for_tokens(SECRETS, redirect_uri, code)
+
+    # Verify Google ID token (use the verifier we added earlier)
+    id_claims = verify_google_id_token(tokens["id_token"])
+
+    # pick a display name
+    name = (
+        id_claims.get("name")
+        or " ".join(filter(None, [id_claims.get("given_name"), id_claims.get("family_name")]))
+        or id_claims.get("email")
+        or id_claims.get("sub")
+    )
+
+    # --- your existing semantics: set cookies (subscriber by default for non-Gost)
+    uporabnik = name
+    narocnik = json.dumps(["subscribers"])
+
+    response.set_cookie("uporabnik", uporabnik, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+    response.set_cookie("narocnik", narocnik, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+
+    # tell game engine who logged in
+    try:
+        r = requests.post(
+            f"{GAME_ENGINE_URL}/ksp/init_user",
+            json={"uporabnik": uporabnik, "is_subscriber": True},
+            timeout=5.0,
+        )
+        r.raise_for_status()
+    except requests.RequestException as e:
+        response.status = 502
+        return f"Game engine unavailable: {e}"
+
+    # done → go to UI
+    response.status = 303
+    response.set_header("Location", redirect_to)
+    return ""
+
+
+app = bottle.default_app()
+
+if __name__ == "__main__":
+    app.run(host="localhost", port=8002, debug=True, reloader=True)

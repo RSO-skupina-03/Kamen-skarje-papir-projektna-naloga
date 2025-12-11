@@ -23,7 +23,7 @@
 
         <div class="ksp">
             <button type="submit" class="potrdi">Potrdi</button>
-            <button type="button" class="potrdi" onclick="window.location.href='/igra/'">Nazaj</button>
+            <button type="button" class="potrdi" onclick="window.location.href='/igra'">Nazaj</button>
             % if is_subscriber == True:
             <!--<button type="button" class="potrdi" onclick="window.location.href='/zgodovina_ksp/'">Zgodovina</button>-->
             % end

@@ -89,22 +89,23 @@ def init_user():
     ksp.nastavi_uporabnika(user)
     kspov.nastavi_uporabnika(user)
 
-    if is_subscriber:
-        kspov.get_id_kspov()
-        ksp.get_id_ksp()
-
-        # ➜ popravljen threading: target=..., brez klica ()
-        threading.Thread(
-            target=ksp.load_user_history_ksp,
-            daemon=True,
-        ).start()
-        threading.Thread(
-            target=kspov.load_user_history_kspov,
-            daemon=True,
-        ).start()
-    else:
-        ksp.nastavi_id(len(ksp.igre))
-        kspov.nastavi_id(len(kspov.igre))
+    # To nastavi ko bos sel delat zgodovino
+    #if is_subscriber:
+    #    kspov.get_id_kspov()
+    #    ksp.get_id_ksp()
+    #
+    #    # ➜ popravljen threading: target=..., brez klica ()
+    #    threading.Thread(
+    #        target=ksp.load_user_history_ksp,
+    #        daemon=True,
+    #    ).start()
+    #    threading.Thread(
+    #        target=kspov.load_user_history_kspov,
+    #        daemon=True,
+    #    ).start()
+    #else:
+    #    ksp.nastavi_id(len(ksp.igre))
+    #    kspov.nastavi_id(len(kspov.igre))
 
     # po želji vrneš ID-je, če jih frontend kdaj rabi
     payload = {
@@ -128,13 +129,14 @@ def compute_ksp_state(id_igre: int, is_subscriber: bool):
     finished = igra.zmaga_igralca() or igra.zmaga_racunalnika()
 
     if finished:
-        if is_subscriber:
-            threading.Thread(
-                # target=ksp.insert_game_ksp,
-                args=(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika()),
-                daemon=True,
-            ).start()
-        else:
+        # To nastavi ko bos sel delat zgoodvino
+        #if is_subscriber:
+        #    threading.Thread(
+        #        target=ksp.insert_game_ksp,
+        #        args=(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika()),
+        #        daemon=True,
+        #    ).start()
+        #else:
             ksp.igre.pop(id_igre, None)
             ksp.shrani_v_datoteko()
             ksp.nastavi_id(len(ksp.igre))
@@ -276,4 +278,4 @@ def kspov_move_api():
 app = bottle.default_app()
 
 if __name__ == "__main__":
-    bottle.run(app=app, host="127.0.0.1", port=8001, debug=True, reloader=True)
+    bottle.run(app=app, host="localhost", port=8001, debug=True, reloader=True)

@@ -46,6 +46,9 @@ pip install bottle
 pip install hypercorn
 pip install python-dotenv
 
+#For auth service
+pip install bottle python-dotenv requests PyJWT
+
 
 
 

@@ -101,7 +101,7 @@ def login_preflight():
 def login():
     if request.method == "HEAD":
         response.status = 303
-        response.set_header("Location", "/igra/")
+        response.set_header("Location", "/igra")
         return
 
     data = request.json or {}
@@ -143,12 +143,12 @@ def login():
 
     # (opcijsko: data = r.json() in logiraš, uporabljaš ksp_id, kspov_id, ...)
 
-    # 3) redirect na /igra/ (ali /ksp/, kakor imaš urejen UI)
+    # 3) redirect na /igra (ali /ksp/, kakor imaš urejen UI)
     response.status = 303
-    response.set_header("Location", "/igra/")
+    response.set_header("Location", "/igra")
     return
 
-@bottle.route('/igra/', method=['GET','HEAD'])
+@bottle.route('/igra', method=['GET','HEAD'])
 def igra():
     if request.method == 'HEAD':
         response.status = 200
@@ -464,4 +464,4 @@ def igra_kspov_frontend():
 app = bottle.default_app()
 
 if __name__ == "__main__":
-    bottle.run(app=app, host="127.0.0.1", port=8000, debug=True, reloader=True)
+    bottle.run(app=app, host="localhost", port=8000, debug=True, reloader=True)
