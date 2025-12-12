@@ -10,7 +10,7 @@ from google.auth.transport import requests as google_requests
 
 load_dotenv()
 
-HOST_BASE = os.environ["HOST_BASE"]
+AUTH_URL = os.environ["AUTH_URL"]
 SCOPES = ["openid", "profile", "email"]
 STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 GAME_ENGINE_URL = os.environ["GAME_ENGINE_URL"]
@@ -21,13 +21,80 @@ SECRETS = {
     "client_secret": os.environ["GOOGLE_CLIENT_SECRET"],
     "auth_uri":      "https://accounts.google.com/o/oauth2/v2/auth",
     "token_uri":     "https://oauth2.googleapis.com/token",
-    "redirect_uris": [f"{HOST_BASE}/auth/google/callback"],
+    "redirect_uris": [f"{AUTH_URL}/auth/google/callback"],
 }
 
 
 GOOGLE_CLIENT_ID = SECRETS["client_id"]
 
 STATE_STORE = {}  # state -> True (simple in-memory CSRF cache)
+
+@bottle.route('/health', method=['GET', 'HEAD'])
+def health_check():
+    """Liveness probe - checks if the application is alive"""
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+    response.content_type = 'application/json'
+    return json.dumps({"status": "healthy", "service": "ksp-auth"})
+
+@bottle.route('/ready', method=['GET', 'HEAD'])
+def readiness_check():
+    """Readiness probe - checks if the application is ready to serve traffic"""
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+    
+    # Check required environment variables
+    checks = {
+        "status": "ready",
+        "service": "ksp-auth",
+        "checks": {}
+    }
+    
+    # Check if required environment variables are set
+    try:
+        auth_url = os.environ.get("AUTH_URL")
+        session_cookie_secret = os.environ.get("SESSION_COOKIE_SECRET")
+        game_engine_url = os.environ.get("GAME_ENGINE_URL")
+        frontend_url = os.environ.get("FRONTEND_URL")
+        google_client_id = os.environ.get("GOOGLE_CLIENT_ID")
+        google_client_secret = os.environ.get("GOOGLE_CLIENT_SECRET")
+        
+        checks["checks"]["environment"] = {
+            "AUTH_URL": "ok" if auth_url else "missing",
+            "SESSION_COOKIE_SECRET": "ok" if session_cookie_secret else "missing",
+            "GAME_ENGINE_URL": "ok" if game_engine_url else "missing",
+            "FRONTEND_URL": "ok" if frontend_url else "missing",
+            "GOOGLE_CLIENT_ID": "ok" if google_client_id else "missing",
+            "GOOGLE_CLIENT_SECRET": "ok" if google_client_secret else "missing"
+        }
+
+        # Determine overall readiness
+        all_ok = (
+            auth_url and 
+            session_cookie_secret and
+            game_engine_url and
+            frontend_url and
+            google_client_id and
+            google_client_secret
+        )
+        
+        if all_ok:
+            response.status = 200
+            checks["status"] = "ready"
+        else:
+            response.status = 503  # Service Unavailable
+            checks["status"] = "not ready"
+            
+    except Exception as e:
+        response.status = 503
+        checks["status"] = "error"
+        checks["error"] = str(e)
+    
+    response.content_type = 'application/json'
+    return json.dumps(checks, indent=2)
+
 
 def build_authorization_url(secrets: dict, redirect_uri: str) -> tuple[str, str]:
     state = hashlib.sha256(os.urandom(32)).hexdigest()
@@ -151,5 +218,5 @@ def google_callback():
 
 app = bottle.default_app()
 
-if __name__ == "__main__":
-    app.run(host="localhost", port=8002, debug=True, reloader=True)
+# if __name__ == "__main__":
+#     app.run(host="localhost", port=8002, debug=True, reloader=True)

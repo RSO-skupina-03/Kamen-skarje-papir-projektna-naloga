@@ -54,16 +54,22 @@ def readiness_check():
     try:
         session_secret = os.environ.get("SESSION_COOKIE_SECRET")
         game_engine_url = os.environ.get("GAME_ENGINE_URL")
+        frontend_url = os.environ.get("FRONTEND_URL")
+        auth_url = os.environ.get("AUTH_URL")
         
         checks["checks"]["environment"] = {
             "SESSION_COOKIE_SECRET": "ok" if session_secret else "missing",
-            "GAME_ENGINE_URL": "ok" if game_engine_url else "missing"
+            "GAME_ENGINE_URL": "ok" if game_engine_url else "missing",
+            "FRONTEND_URL": "ok" if frontend_url else "missing",
+            "AUTH_URL": "ok" if auth_url else "missing"
         }
 
         # Determine overall readiness
         all_ok = (
             session_secret and 
-            game_engine_url
+            game_engine_url and
+            frontend_url and
+            auth_url
         )
         
         if all_ok:
@@ -80,6 +86,15 @@ def readiness_check():
     
     response.content_type = 'application/json'
     return json.dumps(checks, indent=2)
+
+@bottle.get("/env.js")
+def env_js():
+    cfg = {
+        "AUTH_URL": os.environ["AUTH_URL"],
+        "FRONTEND_URL": os.environ["FRONTEND_URL"],
+    }
+    response.content_type = "application/javascript; charset=utf-8"
+    return "window.__ENV__ = " + json.dumps(cfg) + ";"
 
 @bottle.route('/', method=['GET','HEAD'])
 def login():

@@ -6,7 +6,6 @@ azure/
 k8s/
 .env
 docker-compose.yaml
-Dockerfile
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]

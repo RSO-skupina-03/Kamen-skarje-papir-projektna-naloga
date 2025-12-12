@@ -277,5 +277,5 @@ def kspov_move_api():
 
 app = bottle.default_app()
 
-if __name__ == "__main__":
-    bottle.run(app=app, host="localhost", port=8001, debug=True, reloader=True)
+# if __name__ == "__main__":
+#     bottle.run(app=app, host="localhost", port=8001, debug=True, reloader=True)

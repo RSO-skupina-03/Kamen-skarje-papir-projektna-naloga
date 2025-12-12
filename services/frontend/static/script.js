@@ -15,13 +15,12 @@ function Uporabnik() {
     .catch(error => console.error("Napaka:", error));
 }
 
-  function Prijava() {
-    // auth service runs on :8080, frontend on :8000
-    const AUTH_ORIGIN = "http://localhost:8002";
-    const FRONTEND_RETURN = `${window.location.origin}/igra`;  // -> http://localhost:8000/igra
-    const url = `${AUTH_ORIGIN}/auth/google/login?redirect_to=${encodeURIComponent(FRONTEND_RETURN)}`;
-    window.location.assign(url);
-  }
+function Prijava() {
+  const { AUTH_URL, FRONTEND_URL } = window.__ENV__;
+  const FRONTEND_RETURN = `${window.location.origin}/igra`;
+  const url = `${AUTH_URL}/auth/google/login?redirect_to=${encodeURIComponent(FRONTEND_RETURN)}`;
+  window.location.assign(url);
+}
 
 function Gost() {
 

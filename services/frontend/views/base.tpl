@@ -14,5 +14,6 @@
     </div>
 
     <script src="/static/script.js"></script>
+    <script src="/env.js"></script>
 </body>
 </html>
