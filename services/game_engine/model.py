@@ -1,15 +1,56 @@
 import os
+import threading
 import json
 from random import randint
 from dotenv import load_dotenv
+from psycopg_pool import ConnectionPool
 
 load_dotenv()
-DB_URL = os.environ["DB_URL"]
 MOZNOSTI = ['Kamen', 'Škarje', 'Papir']
 MOZNOSTI_2 = ['Kamen', 'Škarje', 'Papir', 'Voda', 'Ogenj']
 DATOTEKA_KSP = 'datoteke/ksp.json'
 DATOTEKA_KSPOV = 'datoteke/kspov.json'
 ZACETEK = 'Zacetek'
+
+DB_URL = os.environ["DB_URL"]
+
+# Lazy, thread-safe pool init (avoids forking issues with dev reloaders)
+_POOL = None
+_POOL_LOCK = threading.Lock()
+
+def get_pool() -> ConnectionPool:
+    global _POOL
+    if _POOL is None:
+        with _POOL_LOCK:
+            if _POOL is None:
+                _POOL = ConnectionPool(
+                    DB_URL,
+                    min_size=1,
+                    max_size=5,
+                    max_idle=60,        # recycle idle conns
+                    max_lifetime=600,   # recycle long-lived conns
+                    timeout=5,
+                    open=True           # silence deprecation, open now
+                )
+    return _POOL
+
+
+def _exec_with_retry(sql, params=(), fetchone=False):
+    """Run a single statement with a 1x retry if a stale connection appears."""
+    pool = get_pool()
+    for attempt in (1, 2):
+        try:
+            with pool.connection() as conn:
+                with conn.cursor() as cur:
+                    cur.execute(sql, params)
+                    if fetchone:
+                        return cur.fetchone()
+                    return None
+        except psycopg.OperationalError:
+            # Broken/closed conn (e.g., Neon idle close) → reset pool and retry once
+            pool.reset()
+            if attempt == 2:
+                raise
 
 class Igra:
 
@@ -218,43 +259,27 @@ class KSP(Datoteka):
             }
         else:
             self.igre = {}
-    
-    # To funkcijo je treba updatetati na novo podatkovno bazo
-    #def insert_game_ksp(self, game_id, player_score, computer_score):
-    #    connection = psycopg2.connect(DB_URL)
-    #    cursor = connection.cursor()
-    #
-    #    upsert_sql = """
-    #        INSERT INTO ksp (username, game_id, player, computer)
-    #        VALUES (%s, %s, %s, %s)
-    #        ON CONFLICT (username, game_id) DO UPDATE
-    #            SET player   = EXCLUDED.player,
-    #                computer = EXCLUDED.computer
-    #        """
-    #    cursor.execute(upsert_sql, (self.uporabnik, game_id, player_score, computer_score))
-    #
-    #    connection.commit()
-    #    cursor.close()
-    #    connection.close()
-    #    print("Data loaded into ksp.")
-    
-    # Treba je updatetati na novo podatkovno bazo
-    #def get_id_ksp(self):
-    #    conn = psycopg2.connect(DB_URL)
-    #    try:
-    #        with conn.cursor() as cur:
-    #            cur.execute(
-    #                "SELECT MAX(game_id) FROM ksp WHERE username = %s",
-    #                (self.uporabnik,)
-    #            )
-    #            row = cur.fetchone()
-    #            max_id = row[0]
-    #            if max_id is not None:
-    #                self.id = row[0]
-    #            else:
-    #                self.id = 0
-    #    finally:
-    #        conn.close()
+
+    def insert_game_ksp(self, game_id, player_score, computer_score):
+        sql = """
+        INSERT INTO ksp (username, game_id, player, computer, played_at)
+        VALUES (%s, %s, %s, %s, NOW())
+        ON CONFLICT (username, game_id) DO UPDATE
+        SET player   = EXCLUDED.player,
+            computer = EXCLUDED.computer,
+            played_at = NOW()
+        """
+        _exec_with_retry(sql, (self.uporabnik, game_id, player_score, computer_score))
+
+    def get_id_ksp(self):
+        # If game_id is INTEGER:
+        row = _exec_with_retry(
+            "SELECT COALESCE(MAX(game_id), 0) FROM ksp WHERE username = %s",
+            (self.uporabnik,),
+            fetchone=True
+        )
+        max_id = row[0] if row else 0
+        self.nastavi_id(int(max_id))
 
     # Treba je upadtetati na novo podatkovno bazo
     #def load_user_history_ksp(self):
@@ -363,42 +388,27 @@ class KSPOV(Datoteka):
             }
         else:
             self.igre = {}
-    # Treba je upadtetati na novo podatkovno bazo
-    #def insert_game_kspov(self, game_id, player_score, computer_score):
-    #    connection = psycopg2.connect(DB_URL)
-    #    cursor = connection.cursor()
-    #
-    #    upsert_sql = """
-    #        INSERT INTO kspov (username, game_id, player, computer)
-    #        VALUES (%s, %s, %s, %s)
-    #        ON CONFLICT (username, game_id) DO UPDATE
-    #            SET player   = EXCLUDED.player,
-    #                computer = EXCLUDED.computer
-    #        """
-    #    cursor.execute(upsert_sql, (self.uporabnik, game_id, player_score, computer_score))
-    #
-    #    connection.commit()
-    #    cursor.close()
-    #    connection.close()
-    #    print("Data loaded into kspov.")
+    
+    def insert_game_kspov(self, game_id, player_score, computer_score):
+        sql = """
+        INSERT INTO kspov (username, game_id, player, computer, played_at)
+        VALUES (%s, %s, %s, %s, NOW())
+        ON CONFLICT (username, game_id) DO UPDATE
+        SET player   = EXCLUDED.player,
+            computer = EXCLUDED.computer,
+            played_at = NOW()
+        """
+        _exec_with_retry(sql, (self.uporabnik, game_id, player_score, computer_score))
 
-    # Treba je upadtetati na novo podatkovno bazo
-    #def get_id_kspov(self):
-    #    conn = psycopg2.connect(DB_URL)
-    #    try:
-    #        with conn.cursor() as cur:
-    #            cur.execute(
-    #                "SELECT MAX(game_id) FROM kspov WHERE username = %s",
-    #                (self.uporabnik,)
-    #            )
-    #            row = cur.fetchone()
-    #            max_id = row[0]
-    #            if max_id is not None:
-    #                self.id = row[0]
-    #            else:
-    #                self.id = 0
-    #    finally:
-    #        conn.close()
+    def get_id_kspov(self):
+        # If game_id is INTEGER:
+        row = _exec_with_retry(
+            "SELECT COALESCE(MAX(game_id), 0) FROM kspov WHERE username = %s",
+            (self.uporabnik,),
+            fetchone=True
+        )
+        max_id = row[0] if row else 0
+        self.nastavi_id(int(max_id))
 
     # Treba je upadtetati na novo podatkovno bazo
     #def load_user_history_kspov(self):

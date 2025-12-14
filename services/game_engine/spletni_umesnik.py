@@ -82,38 +82,36 @@ def readiness_check():
 def init_user():
     data = request.json or {}
 
-    user = data.get("uporabnik") or "Gost"
+    user = data.get("uporabnik")
     is_subscriber = bool(data.get("is_subscriber"))
+    mail = data.get("mail")
 
     # Nastavi uporabnika v modelih
-    ksp.nastavi_uporabnika(user)
-    kspov.nastavi_uporabnika(user)
+    ksp.nastavi_uporabnika(mail)
+    kspov.nastavi_uporabnika(mail)
 
     # To nastavi ko bos sel delat zgodovino
-    #if is_subscriber:
-    #    kspov.get_id_kspov()
-    #    ksp.get_id_ksp()
-    #
-    #    # ➜ popravljen threading: target=..., brez klica ()
-    #    threading.Thread(
-    #        target=ksp.load_user_history_ksp,
-    #        daemon=True,
-    #    ).start()
-    #    threading.Thread(
-    #        target=kspov.load_user_history_kspov,
-    #        daemon=True,
-    #    ).start()
-    #else:
-    #    ksp.nastavi_id(len(ksp.igre))
-    #    kspov.nastavi_id(len(kspov.igre))
-
+    if is_subscriber:
+        kspov.get_id_kspov()
+        ksp.get_id_ksp()
+    
+        # ➜ popravljen threading: target=..., brez klica ()
+        #threading.Thread(
+        #    target=ksp.load_user_history_ksp,
+        #    daemon=True,
+        #).start()
+        #threading.Thread(
+        #    target=kspov.load_user_history_kspov,
+        #    daemon=True,
+        #).start()
+    else:
+        ksp.nastavi_id(len(ksp.igre))
+        kspov.nastavi_id(len(kspov.igre))
     # po želji vrneš ID-je, če jih frontend kdaj rabi
     payload = {
         "status": "ok",
         "user": user,
         "is_subscriber": is_subscriber,
-        "ksp_id": getattr(ksp, "id", None),
-        "kspov_id": getattr(kspov, "id", None),
     }
 
     response.content_type = "application/json"
@@ -130,13 +128,13 @@ def compute_ksp_state(id_igre: int, is_subscriber: bool):
 
     if finished:
         # To nastavi ko bos sel delat zgoodvino
-        #if is_subscriber:
-        #    threading.Thread(
-        #        target=ksp.insert_game_ksp,
-        #        args=(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika()),
-        #        daemon=True,
-        #    ).start()
-        #else:
+        if is_subscriber:
+            threading.Thread(
+                target=ksp.insert_game_ksp,
+                args=(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika()),
+                daemon=True,
+            ).start()
+        else:
             ksp.igre.pop(id_igre, None)
             ksp.shrani_v_datoteko()
             ksp.nastavi_id(len(ksp.igre))
@@ -189,8 +187,6 @@ def ksp_move_api():
         response.status = 400
         return {"error": "id_igre and orozje must be integers"}
 
-    is_subscriber = bool(data.get("is_subscriber"))
-
     # 1) izvede potezo na modelu
     ksp.potek_igre(id_igre, orozje)
 
@@ -209,7 +205,7 @@ def compute_kspov_state(id_igre: int, is_subscriber: bool):
     if finished:
         if is_subscriber:
             threading.Thread(
-                # target=kspov.insert_game_kspov,
+                target=kspov.insert_game_kspov,
                 args=(id_igre, igra.koncni_izid_igralca_1(), igra.koncni_izid_racunalnika_1()),
                 daemon=True,
             ).start()
@@ -265,9 +261,7 @@ def kspov_move_api():
     except (TypeError, ValueError):
         response.status = 400
         return {"error": "id_igre and orozje must be integers"}
-
-    is_subscriber = bool(data.get("is_subscriber"))
-
+    
     # 1) izvede potezo na modelu
     kspov.potek_igre_1(id_igre, orozje)
 
@@ -277,5 +271,5 @@ def kspov_move_api():
 
 app = bottle.default_app()
 
-# if __name__ == "__main__":
-#     bottle.run(app=app, host="localhost", port=8001, debug=True, reloader=True)
+if __name__ == "__main__":
+    bottle.run(app=app, host="localhost", port=8081, debug=True)
