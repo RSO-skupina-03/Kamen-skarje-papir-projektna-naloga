@@ -190,19 +190,16 @@ def google_callback():
         or id_claims.get("email")
         or id_claims.get("sub")
     )
-
-    # --- your existing semantics: set cookies (subscriber by default for non-Gost)
-    uporabnik = name
     narocnik = json.dumps(["subscribers"])
-
-    response.set_cookie("uporabnik", uporabnik, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+    mail = id_claims.get("email")
     response.set_cookie("narocnik", narocnik, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+    response.set_cookie("uporabnik", name, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
 
     # tell game engine who logged in
     try:
         r = requests.post(
             f"{GAME_ENGINE_URL}/ksp/init_user",
-            json={"uporabnik": uporabnik, "is_subscriber": True},
+            json={"uporabnik": name, "mail": mail,"is_subscriber": True},
             timeout=5.0,
         )
         r.raise_for_status()
@@ -218,5 +215,5 @@ def google_callback():
 
 app = bottle.default_app()
 
-# if __name__ == "__main__":
-#     app.run(host="localhost", port=8002, debug=True, reloader=True)
+if __name__ == "__main__":
+     app.run(host="localhost", port=8082, debug=True)

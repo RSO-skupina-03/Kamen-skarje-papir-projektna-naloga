@@ -124,6 +124,7 @@ def login():
     password = data.get("password", "")
 
     # za zdaj: Gost ali prazen = guest, ostalo obravnavaj kot subscriber
+    sub = ""
     if user == "Gost" or user == "":
         uporabnik = "Gost"
         sub = json.dumps(["non-subscribers"])
@@ -132,11 +133,8 @@ def login():
         uporabnik = user
         sub = json.dumps(["subscribers"])
 
-    # 1) nastavi piškotke – to je frontend odgovornost
-    response.set_cookie("uporabnik", uporabnik, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+    response.set_cookie("uporabnik", user, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
     response.set_cookie("narocnik", sub, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
-
-    is_subscriber = "subscribers" in json.loads(sub)
 
     # 2) povej game_engine-u, kdo je user in ali je subscriber
     try:
@@ -144,7 +142,8 @@ def login():
             f"{GAME_ENGINE_URL}/ksp/init_user",
             json={
                 "uporabnik": uporabnik,
-                "is_subscriber": is_subscriber,
+                "mail": uporabnik,
+                "is_subscriber": sub,
             },
             timeout=5.0,
         )
@@ -479,4 +478,4 @@ def igra_kspov_frontend():
 app = bottle.default_app()
 
 if __name__ == "__main__":
-    bottle.run(app=app, host="localhost", port=8000, debug=True, reloader=True)
+    bottle.run(app=app, host="localhost", port=8080, debug=True)
