@@ -10,6 +10,7 @@ load_dotenv()
 ID_IGRE_COKOLADNI_PISKOT = "id_igre"
 STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 GAME_ENGINE_URL = os.environ["GAME_ENGINE_URL"]
+AUTH_LOCAL=os.environ["AUTH_LOCAL"]
 
 @bottle.error(404)
 def error404(error):
@@ -161,6 +162,49 @@ def login():
     response.status = 303
     response.set_header("Location", "/igra")
     return
+
+@bottle.get("/auth/finalize")
+def finalize():
+    ticket = bottle.request.query.get("ticket")
+    if not ticket:
+        bottle.abort(400, "Missing ticket")
+
+    # back-channel call to auth (server-to-server)
+    r = requests.post(f"{AUTH_LOCAL}/auth/redeem",
+                      json={"ticket": ticket}, timeout=(3,10))
+    r.raise_for_status()
+    data = r.json()
+
+    uporabnik = data.get("name","")
+    mail = data.get("email","")
+    sub = data.get("sub", "")
+
+    # set cookies on the FRONTEND origin
+    bottle.response.set_cookie("uporabnik", data.get("name",""), path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+    bottle.response.set_cookie("narocnik", sub, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+
+
+    try:
+        r = requests.post(
+            f"{GAME_ENGINE_URL}/ksp/init_user",
+            json={
+                "uporabnik": uporabnik,
+                "mail": mail,
+                "is_subscriber": True,
+            },
+            timeout=5.0,
+        )
+    except requests.RequestException as e:
+        response.status = 502
+        return f"Game engine unavailable: {e}"
+
+    if r.status_code != 200:
+        response.status = 502
+        return f"Game engine error: {r.status_code} {r.text}"
+
+    bottle.response.status = 303
+    bottle.response.set_header("Location", "/igra")
+    return ""
 
 @bottle.route('/igra', method=['GET','HEAD'])
 def igra():

@@ -111,7 +111,6 @@ def init_user():
     payload = {
         "status": "ok",
         "user": user,
-        "is_subscriber": is_subscriber,
     }
 
     response.content_type = "application/json"

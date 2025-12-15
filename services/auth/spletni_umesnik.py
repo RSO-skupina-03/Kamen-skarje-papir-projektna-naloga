@@ -1,4 +1,4 @@
-import os, hashlib, os
+import os, hashlib, time, secrets
 from urllib.parse import urlencode
 import requests
 import bottle
@@ -7,6 +7,9 @@ from bottle import request, response, HTTPError
 from dotenv import load_dotenv
 from google.oauth2 import id_token as google_id_token
 from google.auth.transport import requests as google_requests
+
+TICKET_TTL = 60  # seconds
+TICKETS = {}     # use Redis in prod
 
 load_dotenv()
 
@@ -28,6 +31,8 @@ SECRETS = {
 GOOGLE_CLIENT_ID = SECRETS["client_id"]
 
 STATE_STORE = {}  # state -> True (simple in-memory CSRF cache)
+
+def now(): return int(time.time())
 
 @bottle.route('/health', method=['GET', 'HEAD'])
 def health_check():
@@ -192,25 +197,30 @@ def google_callback():
     )
     narocnik = json.dumps(["subscribers"])
     mail = id_claims.get("email")
-    response.set_cookie("narocnik", narocnik, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
-    response.set_cookie("uporabnik", name, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
 
-    # tell game engine who logged in
-    try:
-        r = requests.post(
-            f"{GAME_ENGINE_URL}/ksp/init_user",
-            json={"uporabnik": name, "mail": mail,"is_subscriber": True},
-            timeout=5.0,
-        )
-        r.raise_for_status()
-    except requests.RequestException as e:
-        response.status = 502
-        return f"Game engine unavailable: {e}"
+    payload = {
+        "name": name,
+        "email": mail,
+        "sub": narocnik,  # or whatever you use
+        "iat": now()
+    }
+    # create one-time ticket
+    ticket = secrets.token_urlsafe(32)
+    TICKETS[ticket] = {"exp": now() + TICKET_TTL, "payload": payload}
 
-    # done → go to UI
+    # send the browser to the frontend finisher
+    finish = f"{FRONTEND_URL}/auth/finalize?ticket={ticket}"
     response.status = 303
-    response.set_header("Location", redirect_to)
+    response.set_header("Location", finish)
     return ""
+
+@bottle.post("/auth/redeem")
+def redeem():
+    t = (request.json or {}).get("ticket")
+    rec = TICKETS.pop(t, None)
+    if not rec or rec["exp"] < now():
+        raise HTTPError(400, "Invalid or expired ticket")
+    return rec["payload"]
 
 
 app = bottle.default_app()
