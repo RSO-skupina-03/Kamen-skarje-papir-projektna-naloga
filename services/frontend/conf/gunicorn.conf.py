@@ -1,5 +1,6 @@
 # Listen on all interfaces, port 8000
 bind = "0.0.0.0:8080"
+# bind = "localhost:8080"
 
 # Sync worker is fine for Bottle / classic WSGI
 worker_class = "gthread"
@@ -12,4 +13,5 @@ reload = True
 # Logging
 loglevel = "debug"
 accesslog = "-"   
-errorlog = "-"  
+errorlog = "-"
+access_log_format = '%(h)s %({Host}i)s "%(r)s" %(s)s %({Referer}i)s "%(a)s"'
