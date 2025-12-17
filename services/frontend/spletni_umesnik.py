@@ -183,7 +183,6 @@ def finalize():
     bottle.response.set_cookie("uporabnik", data.get("name",""), path="/", secret=STARI_SLOVENSKI_PREGOVOR)
     bottle.response.set_cookie("narocnik", sub, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
 
-
     try:
         r = requests.post(
             f"{GAME_ENGINE_URL}/ksp/init_user",
@@ -369,6 +368,26 @@ def igra_ksp_frontend():
     is_subscriber = data["is_subscriber"]
 
     return bottle.template("views/ksp.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
+
+@bottle.route('/zgodovina_ksp/', method=['GET','HEAD'])
+def prikazi_zgodovino():
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+    else:
+        uporabnik = bottle.request.get_cookie("uporabnik", secret=STARI_SLOVENSKI_PREGOVOR)
+        if uporabnik is None:
+            response.status = 303
+            response.set_header("Location", "/")
+            return
+        
+        # To implementiraj klic na backend, ki ni blokirajoc
+        # ksp.preberi_iz_datoteke()
+        # igre_za_brisanje = [id_igre for id_igre, igra in ksp.igre.items() if igra.igralec == 0 and igra.racunalnik == 0]
+        # for id_igre in igre_za_brisanje:
+        #     del ksp.igre[id_igre]
+        # ksp.shrani_v_datoteko()
+        return bottle.template("views/zgodovina_ksp.tpl", igre=seznam_iger, uporabnik=uporabnik.upper())
 #====================================================================================================================================================    
 @bottle.post("/kspov/")
 def izbira_igralca_kspov_frontend():

@@ -4,6 +4,7 @@ import json
 from random import randint
 from dotenv import load_dotenv
 from psycopg_pool import ConnectionPool
+import psycopg
 
 load_dotenv()
 MOZNOSTI = ['Kamen', 'Škarje', 'Papir']
@@ -26,7 +27,7 @@ def get_pool() -> ConnectionPool:
                 _POOL = ConnectionPool(
                     DB_URL,
                     min_size=1,
-                    max_size=5,
+                    max_size=4,
                     max_idle=60,        # recycle idle conns
                     max_lifetime=600,   # recycle long-lived conns
                     timeout=5,
