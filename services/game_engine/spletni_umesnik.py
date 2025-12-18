@@ -7,7 +7,6 @@ from bottle import request, response
 from dotenv import load_dotenv
 
 load_dotenv()
-DB_URL = os.environ["DB_URL"]
 
 ksp = model.KSP()
 kspov = model.KSPOV()
@@ -128,11 +127,12 @@ def compute_ksp_state(id_igre: int, is_subscriber: bool):
     if finished:
         # To nastavi ko bos sel delat zgoodvino
         if is_subscriber:
+            # ksp.insert_game_ksp(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika())
             threading.Thread(
-                target=ksp.insert_game_ksp,
-                args=(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika()),
-                daemon=True,
-            ).start()
+                 target=ksp.insert_game_ksp,
+                 args=(id_igre, igra.koncni_izid_igralca(), igra.koncni_izid_racunalnika()),
+                 daemon=False,
+             ).start()
         else:
             ksp.igre.pop(id_igre, None)
             ksp.shrani_v_datoteko()
@@ -203,10 +203,11 @@ def compute_kspov_state(id_igre: int, is_subscriber: bool):
 
     if finished:
         if is_subscriber:
+            #kspov.insert_game_kspov(id_igre, igra.koncni_izid_igralca_1(), igra.koncni_izid_racunalnika_1())
             threading.Thread(
                 target=kspov.insert_game_kspov,
                 args=(id_igre, igra.koncni_izid_igralca_1(), igra.koncni_izid_racunalnika_1()),
-                daemon=True,
+                daemon=False,
             ).start()
         else:
             kspov.igre.pop(id_igre, None)

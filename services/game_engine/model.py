@@ -1,10 +1,8 @@
 import os
-import threading
 import json
+import requests
 from random import randint
 from dotenv import load_dotenv
-from psycopg_pool import ConnectionPool
-import psycopg
 
 load_dotenv()
 MOZNOSTI = ['Kamen', 'Škarje', 'Papir']
@@ -13,45 +11,7 @@ DATOTEKA_KSP = 'datoteke/ksp.json'
 DATOTEKA_KSPOV = 'datoteke/kspov.json'
 ZACETEK = 'Zacetek'
 
-DB_URL = os.environ["DB_URL"]
-
-# Lazy, thread-safe pool init (avoids forking issues with dev reloaders)
-_POOL = None
-_POOL_LOCK = threading.Lock()
-
-def get_pool() -> ConnectionPool:
-    global _POOL
-    if _POOL is None:
-        with _POOL_LOCK:
-            if _POOL is None:
-                _POOL = ConnectionPool(
-                    DB_URL,
-                    min_size=1,
-                    max_size=4,
-                    max_idle=60,        # recycle idle conns
-                    max_lifetime=600,   # recycle long-lived conns
-                    timeout=5,
-                    open=True           # silence deprecation, open now
-                )
-    return _POOL
-
-
-def _exec_with_retry(sql, params=(), fetchone=False):
-    """Run a single statement with a 1x retry if a stale connection appears."""
-    pool = get_pool()
-    for attempt in (1, 2):
-        try:
-            with pool.connection() as conn:
-                with conn.cursor() as cur:
-                    cur.execute(sql, params)
-                    if fetchone:
-                        return cur.fetchone()
-                    return None
-        except psycopg.OperationalError:
-            # Broken/closed conn (e.g., Neon idle close) → reset pool and retry once
-            pool.reset()
-            if attempt == 2:
-                raise
+DATA_URL = os.environ["DATA_URL"]
 
 class Igra:
 
@@ -261,26 +221,55 @@ class KSP(Datoteka):
         else:
             self.igre = {}
 
-    def insert_game_ksp(self, game_id, player_score, computer_score):
-        sql = """
-        INSERT INTO ksp (username, game_id, player, computer, played_at)
-        VALUES (%s, %s, %s, %s, NOW())
-        ON CONFLICT (username, game_id) DO UPDATE
-        SET player   = EXCLUDED.player,
-            computer = EXCLUDED.computer,
-            played_at = NOW()
+
+    def insert_game_ksp(self, game_id, player_score, computer_score) -> int:
         """
-        _exec_with_retry(sql, (self.uporabnik, game_id, player_score, computer_score))
+        Send an UPSERT request to the data/history microservice.
+        Returns the number of affected rows reported by the service.
+        """
+        url = f"{DATA_URL}/data/ksp/insert"
+        payload = {
+            "username": self.uporabnik,
+            "game_id": game_id,
+            "player": player_score,
+            "computer": computer_score,
+        }
+
+        try:
+            r = requests.post(
+                url,
+                json=payload,
+                timeout=(3, 10),  # 3s connect, 10s read
+                headers={"Content-Type": "application/json"},
+            )
+            r.raise_for_status()
+            data = r.json() if r.headers.get("content-type","").startswith("application/json") else {}
+            return int(data.get("affected", 1))
+        except requests.RequestException as e:
+            raise RuntimeError(f"insert_game_ksp failed: {e}")
 
     def get_id_ksp(self):
-        # If game_id is INTEGER:
-        row = _exec_with_retry(
-            "SELECT COALESCE(MAX(game_id), 0) FROM ksp WHERE username = %s",
-            (self.uporabnik,),
-            fetchone=True
-        )
-        max_id = row[0] if row else 0
-        self.nastavi_id(int(max_id))
+        """
+        Ask the Data microservice for a new game id and set it on this instance.
+        Expects JSON like: {"id": 123} (also accepts "game_id" or "next_id").
+        """
+        url = f"{DATA_URL}/data/ksp/get/id"
+        try:
+            # If your service needs the username, send it along:
+            r = requests.get(url, params={"username": self.uporabnik}, timeout=(2, 6))
+            r.raise_for_status()
+            payload = r.json() or {}
+
+            # Accept common key names
+            new_id = (payload.get("game_id"))
+            if new_id is None:
+                raise ValueError(f"Missing 'id' in response: {payload}")
+
+            self.nastavi_id(int(new_id))
+        except Exception as e:
+            # Log + safe fallback
+            print(f"[get_id_ksp] fetch from {url} failed: {e}", flush=True)
+            self.nastavi_id(0)
 
     # Treba je upadtetati na novo podatkovno bazo
     #def load_user_history_ksp(self):
@@ -390,26 +379,54 @@ class KSPOV(Datoteka):
         else:
             self.igre = {}
     
-    def insert_game_kspov(self, game_id, player_score, computer_score):
-        sql = """
-        INSERT INTO kspov (username, game_id, player, computer, played_at)
-        VALUES (%s, %s, %s, %s, NOW())
-        ON CONFLICT (username, game_id) DO UPDATE
-        SET player   = EXCLUDED.player,
-            computer = EXCLUDED.computer,
-            played_at = NOW()
+    def insert_game_kspov(self, game_id, player_score, computer_score) -> int:
         """
-        _exec_with_retry(sql, (self.uporabnik, game_id, player_score, computer_score))
+        Send an UPSERT request to the data/history microservice.
+        Returns the number of affected rows reported by the service.
+        """
+        url = f"{DATA_URL}/data/kspov/insert"
+        payload = {
+            "username": self.uporabnik,
+            "game_id": game_id,
+            "player": player_score,
+            "computer": computer_score,
+        }
+
+        try:
+            r = requests.post(
+                url,
+                json=payload,
+                timeout=(3, 10),  # 3s connect, 10s read
+                headers={"Content-Type": "application/json"},
+            )
+            r.raise_for_status()
+            data = r.json() if r.headers.get("content-type","").startswith("application/json") else {}
+            return int(data.get("affected", 1))
+        except requests.RequestException as e:
+            raise RuntimeError(f"insert_game_kspov failed: {e}")
 
     def get_id_kspov(self):
-        # If game_id is INTEGER:
-        row = _exec_with_retry(
-            "SELECT COALESCE(MAX(game_id), 0) FROM kspov WHERE username = %s",
-            (self.uporabnik,),
-            fetchone=True
-        )
-        max_id = row[0] if row else 0
-        self.nastavi_id(int(max_id))
+        """
+        Ask the Data microservice for a new game id and set it on this instance.
+        Expects JSON like: {"id": 123} (also accepts "game_id" or "next_id").
+        """
+        url = f"{DATA_URL}/data/kspov/get/id"
+        try:
+            # If your service needs the username, send it along:
+            r = requests.get(url, params={"username": self.uporabnik}, timeout=(2, 6))
+            r.raise_for_status()
+            payload = r.json() or {}
+
+            # Accept common key names
+            new_id = (payload.get("game_id"))
+            if new_id is None:
+                raise ValueError(f"Missing 'id' in response: {payload}")
+
+            self.nastavi_id(int(new_id))
+        except Exception as e:
+            # Log + safe fallback
+            print(f"[get_id_kspov] fetch from {url} failed: {e}", flush=True)
+            self.nastavi_id(0)
 
     # Treba je upadtetati na novo podatkovno bazo
     #def load_user_history_kspov(self):

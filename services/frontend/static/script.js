@@ -37,17 +37,18 @@ function Gost() {
     .catch(error => console.error("Napaka:", error));
 }
 
-function BrisiKSP() {
-    fetch('/brisi_ksp/', {
-        method: 'DELETE',
-        headers: { "Content-Type": "application/json" }
-    })
-    .then(response => {
-        if (response.redirected) {
-            window.location.href = response.url;
-        }
-    })
-    .catch(error => console.error("Napaka:", error));
+async function BrisiKSP() {
+  try {
+    const res = await fetch('/brisi_ksp/', { method: 'DELETE' });
+    if (res.ok) {
+      window.location.reload();
+    } else {
+      alert('Napaka pri brisanju: ' + res.status);
+    }
+  } catch (e) {
+    console.error(e);
+    alert('Napaka pri brisanju (omrežje).');
+  }
 }
 
 function BrisiKSPOV() {

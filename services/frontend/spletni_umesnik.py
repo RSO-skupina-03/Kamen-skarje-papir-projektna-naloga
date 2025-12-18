@@ -10,7 +10,8 @@ load_dotenv()
 ID_IGRE_COKOLADNI_PISKOT = "id_igre"
 STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 GAME_ENGINE_URL = os.environ["GAME_ENGINE_URL"]
-AUTH_LOCAL=os.environ["AUTH_LOCAL"]
+AUTH_LOCAL = os.environ["AUTH_LOCAL"]
+DATA_URL = os.environ["DATA_URL"]
 
 @bottle.error(404)
 def error404(error):
@@ -180,9 +181,9 @@ def finalize():
     sub = data.get("sub", "")
 
     # set cookies on the FRONTEND origin
-    bottle.response.set_cookie("uporabnik", data.get("name",""), path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+    bottle.response.set_cookie("uporabnik", uporabnik, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
     bottle.response.set_cookie("narocnik", sub, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
-
+    bottle.response.set_cookie("mail", mail, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
     try:
         r = requests.post(
             f"{GAME_ENGINE_URL}/ksp/init_user",
@@ -374,20 +375,57 @@ def prikazi_zgodovino():
     if request.method == 'HEAD':
         response.status = 200
         return
-    else:
-        uporabnik = bottle.request.get_cookie("uporabnik", secret=STARI_SLOVENSKI_PREGOVOR)
-        if uporabnik is None:
-            response.status = 303
-            response.set_header("Location", "/")
-            return
-        
-        # To implementiraj klic na backend, ki ni blokirajoc
-        # ksp.preberi_iz_datoteke()
-        # igre_za_brisanje = [id_igre for id_igre, igra in ksp.igre.items() if igra.igralec == 0 and igra.racunalnik == 0]
-        # for id_igre in igre_za_brisanje:
-        #     del ksp.igre[id_igre]
-        # ksp.shrani_v_datoteko()
-        return bottle.template("views/zgodovina_ksp.tpl", igre=seznam_iger, uporabnik=uporabnik.upper())
+
+    uporabnik = request.get_cookie("uporabnik", secret=STARI_SLOVENSKI_PREGOVOR)
+    mail = request.get_cookie("mail", secret=STARI_SLOVENSKI_PREGOVOR)
+    if not uporabnik:
+        response.status = 303
+        response.set_header("Location", "/")
+        return
+
+    # server→server call to Data MS
+    try:
+        r = requests.get(
+            f"{DATA_URL}/data/ksp/history",
+            params={"username": mail},
+            timeout=(2, 6),
+        )
+        r.raise_for_status()
+        seznam_iger = r.json()            # expected: list[ {game_id, player, computer}, ... ]
+        if not isinstance(seznam_iger, list):
+            seznam_iger = []
+    except requests.RequestException as e:
+        response.status = 502
+        print(f"[history] fetch failed: {e}", flush=True)
+        seznam_iger = []
+
+    return bottle.template("views/zgodovina_ksp.tpl", igre=seznam_iger, uporabnik=uporabnik.upper())
+
+@bottle.route('/brisi_ksp/', method=['DELETE','HEAD'])
+def brisi_igre_kps():
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+
+    uporabnik = request.get_cookie("mail", secret=STARI_SLOVENSKI_PREGOVOR)
+    if not uporabnik:
+        response.status = 401
+        return
+
+    try:
+        r = requests.post(
+            f"{DATA_URL}/data/ksp/delete",
+            json={"username": uporabnik},
+            timeout=(3, 10),
+        )
+        r.raise_for_status()
+    except requests.RequestException as e:
+        response.status = 502
+        return
+
+    # Tell client there's nothing to render; just reload
+    response.status = 204
+    return
 #====================================================================================================================================================    
 @bottle.post("/kspov/")
 def izbira_igralca_kspov_frontend():

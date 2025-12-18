@@ -9,10 +9,9 @@ RUN python3 -m venv .venv \
  && .venv/bin/pip install --no-cache-dir --upgrade pip \
  && .venv/bin/pip install --no-cache-dir \
     bottle>=0.12.25 \
+    requests>=2.32.0 \
     python-dotenv>=1.0.0 \
     gunicorn>=21.2.0 \
-    psycopg[binary]>=3.1 \
-    psycopg_pool>=3.1
 
 
 COPY conf/ conf/

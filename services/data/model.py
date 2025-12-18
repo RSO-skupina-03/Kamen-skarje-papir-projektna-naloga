@@ -59,12 +59,29 @@ def _exec_with_retry(sql, params=(), mode: str = "none"):
             if attempt == 2:
                 raise
 
-
-
-def load_user_history_ksp(mail):
+def insert_game_ksp(mail, game_id, player_score, computer_score) -> int:
+    sql = """
+    INSERT INTO ksp (username, game_id, player, computer, played_at)
+    VALUES (%s, %s, %s, %s, NOW())
+    ON CONFLICT (username, game_id) DO UPDATE
+      SET player   = EXCLUDED.player,
+          computer = EXCLUDED.computer,
+          played_at = NOW()
     """
-    Load user's KSP games from DB (via pool) and merge into DATOTEKA_KSP.
-    """
+    return _exec_with_retry(sql, (mail, game_id, player_score, computer_score), mode="rowcount")
+
+def get_id_ksp(mail):
+    row = _exec_with_retry(
+        """
+        SELECT COALESCE(MAX(game_id::int), 0) FROM ksp WHERE username = %s 
+        """,
+        (mail,),
+        mode="one",
+    )
+    max_id = row[0] if row else 0
+    return int(max_id)
+
+def get_user_history_ksp_list(mail):
     rows = _exec_with_retry(
         """
         SELECT game_id, player, computer
@@ -72,50 +89,47 @@ def load_user_history_ksp(mail):
         WHERE username = %s
         ORDER BY game_id
         """,
-        (mail),
-        mode="all"
+        (mail,),                 # tuple!
+        mode="all",
     )
 
-    user_games = {str(gid): [player, computer] for gid, player, computer in rows}
+    return [{"game_id": int(g), "player": int(p), "computer": int(c)} for (g, p, c) in rows]
 
-    # Read existing JSON (if any)
-    try:
-        with open(DATOTEKA_KSP, "r", encoding="utf-8") as f:
-            try:
-                all_data = json.load(f)
-            except json.JSONDecodeError:
-                all_data = {}
-    except FileNotFoundError:
-        all_data = {}
-
-    existing = all_data.get(mail, {})
-    existing.update(user_games)
-    all_data[mail] = existing
-
-    # Ensure folder exists
-    Path(os.path.dirname(DATOTEKA_KSP) or ".").mkdir(parents=True, exist_ok=True)
-
-    # Atomic write to avoid partial files
-    with tempfile.NamedTemporaryFile("w", delete=False, encoding="utf-8") as tf:
-        json.dump(all_data, tf, indent=2, ensure_ascii=False)
-        tmp_name = tf.name
-    os.replace(tmp_name, DATOTEKA_KSP)
-
-
-def delete_ksp(self) -> int:
+def delete_ksp(mail) -> int:
     """
     Delete all KSP games for current user (via pool + retry).
     Returns the number of deleted rows; also resets self.id to 0.
     """
     deleted = _exec_with_retry(
         "DELETE FROM ksp WHERE username = %s",
-        (self.uporabnik,),
+        (mail,),
         mode="rowcount",
     )
     return int(deleted or 0)
         
 #=========================================================================================================================================================
 
+def insert_game_kspov(mail, game_id, player_score, computer_score) -> int:
+    sql = """
+    INSERT INTO kspov (username, game_id, player, computer, played_at)
+    VALUES (%s, %s, %s, %s, NOW())
+    ON CONFLICT (username, game_id) DO UPDATE
+      SET player   = EXCLUDED.player,
+          computer = EXCLUDED.computer,
+          played_at = NOW()
+    """
+    return _exec_with_retry(sql, (mail, game_id, player_score, computer_score), mode="rowcount")
+
+def get_id_kspov(mail):
+    row = _exec_with_retry(
+        """
+        SELECT COALESCE(MAX(game_id::int), 0) FROM kspov WHERE username = %s 
+        """,
+        (mail,),
+        mode="one",
+    )
+    max_id = row[0] if row else 0
+    return int(max_id)
 
 
 
