@@ -2,6 +2,7 @@ import os
 import json
 import bottle
 import requests
+import model
 from bottle import request, response
 from dotenv import load_dotenv
 
@@ -91,10 +92,7 @@ def readiness_check():
 
 @bottle.get("/env.js")
 def env_js():
-    cfg = {
-        "AUTH_URL": os.environ["AUTH_URL"],
-        "FRONTEND_URL": os.environ["FRONTEND_URL"],
-    }
+    cfg = {"AUTH_URL": os.environ["AUTH_URL"]}
     response.content_type = "application/javascript; charset=utf-8"
     return "window.__ENV__ = " + json.dumps(cfg) + ";"
 
@@ -107,14 +105,14 @@ def login():
         valid = request.query.get("valid","1") != "0"
         return bottle.template('views/log.tpl', valid=valid)
             
-@bottle.route('/login/', method=['OPTIONS'])
+@bottle.route('/frontend/login', method=['OPTIONS'])
 def login_preflight():
     response.set_header('Access-Control-Allow-Origin',  '*')
     response.set_header('Access-Control-Allow-Methods', 'PUT, OPTIONS')
     response.set_header('Access-Control-Allow-Headers', 'Content-Type')
     return
 
-@bottle.route("/login/", method=["PUT", "HEAD"])
+@bottle.route("/frontend/login", method=["PUT", "HEAD"])
 def login():
     if request.method == "HEAD":
         response.status = 303
@@ -123,41 +121,15 @@ def login():
 
     data = request.json or {}
     user = data.get("uporabnik", "")
-    password = data.get("password", "")
 
-    # za zdaj: Gost ali prazen = guest, ostalo obravnavaj kot subscriber
-    sub = ""
     if user == "Gost" or user == "":
         uporabnik = "Gost"
-        sub = json.dumps(["non-subscribers"])
-    else:
-        # tu bi šla prava OAuth/LDAP logika – zaenkrat na hard:
-        uporabnik = user
-        sub = json.dumps(["subscribers"])
 
     response.set_cookie("uporabnik", user, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
-    response.set_cookie("narocnik", sub, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
+    response.set_cookie("narocnik", json.dumps(["non-subscribers"]), path="/", secret=STARI_SLOVENSKI_PREGOVOR)
 
     # 2) povej game_engine-u, kdo je user in ali je subscriber
-    try:
-        r = requests.post(
-            f"{GAME_ENGINE_URL}/ksp/init_user",
-            json={
-                "uporabnik": uporabnik,
-                "mail": uporabnik,
-                "is_subscriber": sub,
-            },
-            timeout=5.0,
-        )
-    except requests.RequestException as e:
-        response.status = 502
-        return f"Game engine unavailable: {e}"
-
-    if r.status_code != 200:
-        response.status = 502
-        return f"Game engine error: {r.status_code} {r.text}"
-
-    # (opcijsko: data = r.json() in logiraš, uporabljaš ksp_id, kspov_id, ...)
+    model.game_engine_init_user(user, user, False)
 
     # 3) redirect na /igra (ali /ksp/, kakor imaš urejen UI)
     response.status = 303
@@ -171,10 +143,7 @@ def finalize():
         bottle.abort(400, "Missing ticket")
 
     # back-channel call to auth (server-to-server)
-    r = requests.post(f"{AUTH_LOCAL}/auth/redeem",
-                      json={"ticket": ticket}, timeout=(3,10))
-    r.raise_for_status()
-    data = r.json()
+    data = model.frontend_redeem_ticket(ticket)
 
     uporabnik = data.get("name","")
     mail = data.get("email","")
@@ -184,23 +153,8 @@ def finalize():
     bottle.response.set_cookie("uporabnik", uporabnik, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
     bottle.response.set_cookie("narocnik", sub, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
     bottle.response.set_cookie("mail", mail, path="/", secret=STARI_SLOVENSKI_PREGOVOR)
-    try:
-        r = requests.post(
-            f"{GAME_ENGINE_URL}/ksp/init_user",
-            json={
-                "uporabnik": uporabnik,
-                "mail": mail,
-                "is_subscriber": True,
-            },
-            timeout=5.0,
-        )
-    except requests.RequestException as e:
-        response.status = 502
-        return f"Game engine unavailable: {e}"
 
-    if r.status_code != 200:
-        response.status = 502
-        return f"Game engine error: {r.status_code} {r.text}"
+    model.game_engine_init_user(uporabnik, mail, True)
 
     bottle.response.status = 303
     bottle.response.set_header("Location", "/igra")
@@ -224,10 +178,7 @@ def igra():
 @bottle.post("/ksp/")
 def izbira_igralca_ksp_frontend():
     # 1) id igre iz cookie-ja
-    id_cookie = request.get_cookie(
-        ID_IGRE_COKOLADNI_PISKOT,
-        secret=STARI_SLOVENSKI_PREGOVOR,
-    )
+    id_cookie = bottle.request.get_cookie(ID_IGRE_COKOLADNI_PISKOT, secret=STARI_SLOVENSKI_PREGOVOR)
     if id_cookie is None:
         response.status = 303
         response.set_header("Location", "/nova_igra_ksp/")
@@ -253,23 +204,7 @@ def izbira_igralca_ksp_frontend():
         is_subscriber = False
 
     # 4) klic na game_engine: uporabnik je naredil potezo
-    try:
-        r = requests.post(
-            f"{GAME_ENGINE_URL}/ksp/poteza",
-            json={
-                "id_igre": int(id_cookie),
-                "orozje": orozje,
-                "is_subscriber": is_subscriber,
-            },
-            timeout=5.0,
-        )
-    except requests.RequestException as e:
-        response.status = 502
-        return f"Game engine unavailable: {e}"
-
-    if r.status_code != 200:
-        response.status = 502
-        return f"Game engine error: {r.status_code} {r.text}"
+    model.game_engine_ksp_move(int(id_cookie), orozje, is_subscriber)
 
     # 5) po potezi gremo nazaj na GET (da se nova situacija nariše)
     response.status = 303
@@ -285,17 +220,7 @@ def nova_igra_ksp_frontend():
         return
 
     # 1) klic na game_engine, da ustvari novo igro
-    try:
-        r = requests.post(f"{GAME_ENGINE_URL}/ksp/nova", timeout=10.0)
-    except requests.RequestException as e:
-        response.status = 502
-        return f"Game engine unavailable: {e}"
-
-    if r.status_code != 200:
-        response.status = 502
-        return f"Game engine error: {r.status_code} {r.text}"
-
-    data = r.json()
+    data = model.game_engine_ksp_new_game()
     id_nova_igra = data["id_igre"]
 
     # 2) nastavimo cookie z ID-jem igre
@@ -314,13 +239,7 @@ def igra_ksp_frontend():
 
     # 1) preberemo piškotke
     id_cookie = request.get_cookie(ID_IGRE_COKOLADNI_PISKOT, secret=STARI_SLOVENSKI_PREGOVOR)
-    # Za testiranje ----------------------
     raw = bottle.request.get_cookie("narocnik", secret=STARI_SLOVENSKI_PREGOVOR)
-    if raw:
-        is_subscriber = "subscribers" in json.loads(raw)
-    else:
-        is_subscriber = False
-     # Za testiranje ----------------------
 
     # če ni id_igre → frontend odloči, da rabimo novo igro
     if id_cookie is None:
@@ -338,24 +257,7 @@ def igra_ksp_frontend():
         is_subscriber = False
 
     # 2) kličemo game_engine HTTP API
-    try:
-        r = requests.get(
-            f"{GAME_ENGINE_URL}/ksp/state",
-            params={
-                "id_igre": id_cookie,
-                "is_subscriber": "1" if is_subscriber else "0",
-            },
-            timeout=10.0,
-        )
-    except requests.RequestException as e:
-        response.status = 502
-        return f"Game engine unavailable: {e}"
-
-    if r.status_code != 200:
-        response.status = 502
-        return f"Game engine error: {r.status_code} {r.text}"
-
-    data = r.json()
+    data = model.game_engine_get_ksp_state(int(id_cookie), is_subscriber)
 
     # 3) frontend spet samo odloči, kaj narediti
     if data.get("action") == "new_game":
@@ -384,20 +286,7 @@ def prikazi_zgodovino():
         return
 
     # server→server call to Data MS
-    try:
-        r = requests.get(
-            f"{DATA_URL}/data/ksp/history",
-            params={"username": mail},
-            timeout=(2, 6),
-        )
-        r.raise_for_status()
-        seznam_iger = r.json()            # expected: list[ {game_id, player, computer}, ... ]
-        if not isinstance(seznam_iger, list):
-            seznam_iger = []
-    except requests.RequestException as e:
-        response.status = 502
-        print(f"[history] fetch failed: {e}", flush=True)
-        seznam_iger = []
+    seznam_iger = model.data_ksp_history(mail)
 
     return bottle.template("views/zgodovina_ksp.tpl", igre=seznam_iger, uporabnik=uporabnik.upper())
 
@@ -411,29 +300,17 @@ def brisi_igre_kps():
     if not uporabnik:
         response.status = 401
         return
-
-    try:
-        r = requests.post(
-            f"{DATA_URL}/data/ksp/delete",
-            json={"username": uporabnik},
-            timeout=(3, 10),
-        )
-        r.raise_for_status()
-    except requests.RequestException as e:
-        response.status = 502
-        return
-
-    # Tell client there's nothing to render; just reload
-    response.status = 204
+    
+    model.data_delete_ksp(uporabnik)
+    response.status = 303
+    response.set_header("Location", "/zgodovina_ksp/")
     return
 #====================================================================================================================================================    
 @bottle.post("/kspov/")
 def izbira_igralca_kspov_frontend():
     # 1) id igre iz cookie-ja
-    id_cookie = request.get_cookie(
-        ID_IGRE_COKOLADNI_PISKOT,
-        secret=STARI_SLOVENSKI_PREGOVOR,
-    )
+    id_cookie = request.get_cookie(ID_IGRE_COKOLADNI_PISKOT, secret=STARI_SLOVENSKI_PREGOVOR)
+    
     if id_cookie is None:
         response.status = 303
         response.set_header("Location", "/nova_igra_kspov/")
@@ -459,23 +336,7 @@ def izbira_igralca_kspov_frontend():
         is_subscriber = False
 
     # 4) klic na game_engine: uporabnik je naredil potezo
-    try:
-        r = requests.post(
-            f"{GAME_ENGINE_URL}/kspov/poteza",
-            json={
-                "id_igre": int(id_cookie),
-                "orozje": orozje,
-                "is_subscriber": is_subscriber,
-            },
-            timeout=5.0,
-        )
-    except requests.RequestException as e:
-        response.status = 502
-        return f"Game engine unavailable: {e}"
-
-    if r.status_code != 200:
-        response.status = 502
-        return f"Game engine error: {r.status_code} {r.text}"
+    model.game_engine_kspov_move(int(id_cookie), orozje, is_subscriber)
 
     # 5) po potezi gremo nazaj na GET (da se nova situacija nariše)
     response.status = 303
@@ -575,6 +436,62 @@ def igra_kspov_frontend():
     is_subscriber = data["is_subscriber"]
 
     return bottle.template("views/kspov.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
+
+@bottle.route('/zgodovina_kspov/', method=['GET','HEAD'])
+def prikazi_zgodovino():
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+
+    uporabnik = request.get_cookie("uporabnik", secret=STARI_SLOVENSKI_PREGOVOR)
+    mail = request.get_cookie("mail", secret=STARI_SLOVENSKI_PREGOVOR)
+    if not uporabnik:
+        response.status = 303
+        response.set_header("Location", "/")
+        return
+
+    # server→server call to Data MS
+    try:
+        r = requests.get(
+            f"{DATA_URL}/data/kspov/history",
+            params={"username": mail},
+            timeout=(2, 6),
+        )
+        r.raise_for_status()
+        seznam_iger = r.json()            # expected: list[ {game_id, player, computer}, ... ]
+        if not isinstance(seznam_iger, list):
+            seznam_iger = []
+    except requests.RequestException as e:
+        response.status = 502
+        print(f"[history] fetch failed: {e}", flush=True)
+        seznam_iger = []
+
+    return bottle.template("views/zgodovina_kspov.tpl", igre=seznam_iger, uporabnik=uporabnik.upper())
+
+@bottle.route('/brisi_kspov/', method=['DELETE','HEAD'])
+def brisi_igre_kps():
+    if request.method == 'HEAD':
+        response.status = 200
+        return
+
+    uporabnik = request.get_cookie("mail", secret=STARI_SLOVENSKI_PREGOVOR)
+    if not uporabnik:
+        response.status = 401
+        return
+
+    try:
+        r = requests.post(
+            f"{DATA_URL}/data/kspov/delete",
+            json={"username": uporabnik},
+            timeout=(3, 10),
+        )
+        r.raise_for_status()
+    except requests.RequestException as e:
+        response.status = 502
+        return
+    response.status = 303
+    response.set_header("Location", "/zgodovina_kspov/")
+    return
 
 app = bottle.default_app()
 

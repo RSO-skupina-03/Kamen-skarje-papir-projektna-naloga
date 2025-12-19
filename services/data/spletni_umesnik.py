@@ -159,6 +159,29 @@ def data_get_id():
     except Exception as e:
         raise HTTPError(500, f"Failed to get game_id: {e}")
 
+@bottle.get("/data/kspov/history")
+def history_kspov():
+    mail = request.query.get("username")
+    if not mail:
+        raise HTTPError(400, "Missing username/mail/email")
+    data = model.get_user_history_kspov_list(mail)
+    response.content_type = "application/json; charset=utf-8"
+    return json.dumps(data, ensure_ascii=False)
+
+@bottle.post("/data/kspov/delete")
+def kspov_insert():
+    username = request.json.get("username")
+    if not username:
+        raise HTTPError(400, "Missing field: username")
+
+    try:
+        affected = model.delete_kspov(username)  # should return int (rows deleted)
+    except Exception as e:  # optionally catch DB-specific errors
+        raise HTTPError(500, f"Delete failed: {e}")
+
+    response.content_type = "application/json"
+    return json.dumps({"ok": True, "affected": int(affected)}, ensure_ascii=False)
+
 app = bottle.default_app()
 
 if __name__ == "__main__":

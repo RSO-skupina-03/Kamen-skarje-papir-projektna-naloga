@@ -131,6 +131,32 @@ def get_id_kspov(mail):
     max_id = row[0] if row else 0
     return int(max_id)
 
+def get_user_history_kspov_list(mail):
+    rows = _exec_with_retry(
+        """
+        SELECT game_id, player, computer
+        FROM kspov
+        WHERE username = %s
+        ORDER BY game_id
+        """,
+        (mail,),                 # tuple!
+        mode="all",
+    )
+
+    return [{"game_id": int(g), "player": int(p), "computer": int(c)} for (g, p, c) in rows]
+
+def delete_kspov(mail) -> int:
+    """
+    Delete all kspov games for current user (via pool + retry).
+    Returns the number of deleted rows; also resets self.id to 0.
+    """
+    deleted = _exec_with_retry(
+        "DELETE FROM kspov WHERE username = %s",
+        (mail,),
+        mode="rowcount",
+    )
+    return int(deleted or 0)
+
 
 
         
