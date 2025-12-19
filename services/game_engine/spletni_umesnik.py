@@ -1,8 +1,4 @@
-import os
-import json
-import bottle
-import threading
-import model
+import os, json, bottle, threading, model
 from bottle import request, response
 from dotenv import load_dotenv
 
@@ -37,9 +33,13 @@ def readiness_check():
     # Check if required environment variables are set
     try:
         db_url = os.environ.get("DB_URL")
+        datoteka_ksp = os.environ.get("DATOTEKA_KSP")
+        datoteka_kspov = os.environ.get("DATOTEKA_KSPOV")
         
         checks["checks"]["environment"] = {
-            "DB_URL": "ok" if db_url else "missing"
+            "DB_URL": "ok" if db_url else "missing",
+            "DATOTEKA_KSP": "ok" if datoteka_ksp else "missing",
+            "DATOTEKA_KSP": "ok" if datoteka_kspov else "missing"
         }
         
         # Check if data directory is writable
@@ -58,7 +58,9 @@ def readiness_check():
         
         # Determine overall readiness
         all_ok = (
-            db_url and 
+            db_url and
+            datoteka_ksp and
+            datoteka_kspov and
             checks["checks"]["filesystem"] == "ok"
         )
         
@@ -77,7 +79,7 @@ def readiness_check():
     response.content_type = 'application/json'
     return json.dumps(checks, indent=2)
 
-@bottle.post("/ksp/init_user")
+@bottle.post("/game/init_user")
 def init_user():
     data = request.json or {}
 
@@ -93,16 +95,6 @@ def init_user():
     if is_subscriber:
         kspov.get_id_kspov()
         ksp.get_id_ksp()
-    
-        # ➜ popravljen threading: target=..., brez klica ()
-        #threading.Thread(
-        #    target=ksp.load_user_history_ksp,
-        #    daemon=True,
-        #).start()
-        #threading.Thread(
-        #    target=kspov.load_user_history_kspov,
-        #    daemon=True,
-        #).start()
     else:
         ksp.nastavi_id(len(ksp.igre))
         kspov.nastavi_id(len(kspov.igre))
@@ -153,7 +145,7 @@ def compute_ksp_state(id_igre: int, is_subscriber: bool):
         },
     }
 
-@bottle.post("/ksp/nova")
+@bottle.post("/game/ksp/nova")
 def ksp_new():
     """Ustvari novo igro in vrni njen ID kot JSON."""
     id_nova_igra = ksp.nova_igra()
@@ -161,7 +153,7 @@ def ksp_new():
     response.content_type = "application/json"
     return json.dumps({"id_igre": id_nova_igra})
 
-@bottle.route("/ksp/state", method=["GET"])
+@bottle.route("/game/ksp/state", method=["GET"])
 def api_ksp_state():
     try:
         id_igre = int(request.query.get("id_igre"))
@@ -176,7 +168,7 @@ def api_ksp_state():
     response.content_type = "application/json"
     return json.dumps(result)
 
-@bottle.post("/ksp/poteza")
+@bottle.post("/game/ksp/poteza")
 def ksp_move_api():
     data = request.json or {}
     try:
@@ -189,7 +181,7 @@ def ksp_move_api():
     # 1) izvede potezo na modelu
     ksp.potek_igre(id_igre, orozje)
 
-    # 2) vrne morda samo OK (frontend bo itak še enkrat klical /ksp/state)
+    # 2) vrne morda samo OK (frontend bo itak še enkrat klical /game/ksp/state)
     response.content_type = "application/json"
     return json.dumps({"status": "ok"})
 #====================================================================================================================================================
@@ -229,7 +221,7 @@ def compute_kspov_state(id_igre: int, is_subscriber: bool):
         },
     }
 
-@bottle.post("/kspov/nova")
+@bottle.post("/game/kspov/nova")
 def kspov_new():
     """Ustvari novo igro in vrni njen ID kot JSON."""
     id_nova_igra = kspov.nova_igra_1()
@@ -237,7 +229,7 @@ def kspov_new():
     response.content_type = "application/json"
     return json.dumps({"id_igre": id_nova_igra})
 
-@bottle.route("/kspov/state", method=["GET"])
+@bottle.route("/game/kspov/state", method=["GET"])
 def api_kspov_state():
     try:
         id_igre = int(request.query.get("id_igre"))
@@ -252,7 +244,7 @@ def api_kspov_state():
     response.content_type = "application/json"
     return json.dumps(result)
 
-@bottle.post("/kspov/poteza")
+@bottle.post("/game/kspov/poteza")
 def kspov_move_api():
     data = request.json or {}
     try:
@@ -265,7 +257,7 @@ def kspov_move_api():
     # 1) izvede potezo na modelu
     kspov.potek_igre_1(id_igre, orozje)
 
-    # 2) vrne morda samo OK (frontend bo itak še enkrat klical /kspov/state)
+    # 2) vrne morda samo OK (frontend bo itak še enkrat klical /game/kspov/state)
     response.content_type = "application/json"
     return json.dumps({"status": "ok"})
 

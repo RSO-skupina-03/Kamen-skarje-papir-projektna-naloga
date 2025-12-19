@@ -15,7 +15,7 @@ def health_check():
         response.status = 200
         return
     response.content_type = 'application/json'
-    return json.dumps({"status": "healthy", "service": "ksp-game-engine"})
+    return json.dumps({"status": "healthy", "service": "ksp-data"})
 
 @bottle.route('/ready', method=['GET', 'HEAD'])
 def readiness_check():
@@ -27,7 +27,7 @@ def readiness_check():
     # Check required environment variables
     checks = {
         "status": "ready",
-        "service": "ksp-game-engine",
+        "service": "ksp-data",
         "checks": {}
     }
     
@@ -39,24 +39,9 @@ def readiness_check():
             "DB_URL": "ok" if db_url else "missing"
         }
         
-        # Check if data directory is writable
-        try:
-            datoteke_dir = 'datoteke'
-            if not os.path.exists(datoteke_dir):
-                os.makedirs(datoteke_dir, exist_ok=True)
-            # Try to write a test file
-            test_file = os.path.join(datoteke_dir, '.health_check')
-            with open(test_file, 'w') as f:
-                f.write('ok')
-            os.remove(test_file)
-            checks["checks"]["filesystem"] = "ok"
-        except Exception as e:
-            checks["checks"]["filesystem"] = f"error: {str(e)}"
-        
         # Determine overall readiness
         all_ok = (
-            db_url and 
-            checks["checks"]["filesystem"] == "ok"
+            db_url
         )
         
         if all_ok:

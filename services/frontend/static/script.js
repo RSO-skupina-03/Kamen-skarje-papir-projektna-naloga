@@ -37,7 +37,7 @@ function Gost() {
 }
 
 function BrisiKSP() {
-    fetch('/brisi_ksp/', {
+    fetch('/brisi_ksp', {
         method: 'DELETE',
         headers: { "Content-Type": "application/json" }
     })

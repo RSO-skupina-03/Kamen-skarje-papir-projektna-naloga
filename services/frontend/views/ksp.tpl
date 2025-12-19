@@ -11,7 +11,7 @@
 
 
 <div class="radio">
-    <form action="/ksp/" method="POST" class="obrazec">
+    <form action="/ksp" method="POST" class="obrazec">
         <input type="radio" name="orozje" value="0" id="kamen">
         <label for="kamen">KAMEN</label>
 
@@ -25,7 +25,7 @@
             <button type="submit" class="potrdi">Potrdi</button>
             <button type="button" class="potrdi" onclick="window.location.href='/igra'">Nazaj</button>
             % if is_subscriber == True:
-            <button type="button" class="potrdi" onclick="window.location.href='/zgodovina_ksp/'">Zgodovina</button>
+            <button type="button" class="potrdi" onclick="window.location.href='/zgodovina_ksp'">Zgodovina</button>
             % end
         </div>
     </form>
@@ -38,7 +38,7 @@
             <h2>ZMAGA</h2>
         </div>
         <P>BRAVO, ZMAGAL SI MOGOČNI STROJ Z IZIDOM {{igra['koncni_izid_igralca']}} : {{igra['koncni_izid_racunalnika']}}</P>
-        <form action="/nova_igra_ksp/" method="GET">
+        <form action="/nova_igra_ksp" method="GET">
             <button type="submit" class="zacetni">BRAVO !!!</button>
         </form>
     </div>
@@ -53,7 +53,7 @@
             <h2>PORAZ</h2>
         </div>
         <P>IZGUBIL SI PROTI RAČUNALNIKU Z IZIDOM {{igra['koncni_izid_igralca']}} : {{igra['koncni_izid_racunalnika']}}</P>
-        <form action="/nova_igra_ksp/" method="GET">
+        <form action="/nova_igra_ksp" method="GET">
             <button type="submit" class="zacetni">BAD LUCK</button>
         </form>
     </div>

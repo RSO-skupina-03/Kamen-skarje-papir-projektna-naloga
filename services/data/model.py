@@ -1,18 +1,15 @@
-import os, json, tempfile, threading, psycopg
-from pathlib import Path
+import os, threading, psycopg
 from dotenv import load_dotenv
 from psycopg_pool import ConnectionPool
 
 load_dotenv()
 DB_URL = os.environ["DB_URL"]
-DATOTEKA_KSP = 'datoteke/ksp.json'
-DATOTEKA_KSPOV = 'datoteke/kspov.json'
 
 # Lazy, thread-safe pool init (avoids forking issues with dev reloaders)
 _POOL = None
 _POOL_LOCK = threading.Lock()
 
-def get_pool() -> ConnectionPool:
+def _get_pool() -> ConnectionPool:
     global _POOL
     if _POOL is None:
         with _POOL_LOCK:
@@ -39,7 +36,7 @@ def _exec_with_retry(sql, params=(), mode: str = "none"):
       - "all"      : execute, return cursor.fetchall()
       - "rowcount" : execute, return cursor.rowcount (int)
     """
-    pool = get_pool()
+    pool = _get_pool()
     for attempt in (1, 2):
         try:
             with pool.connection() as conn:

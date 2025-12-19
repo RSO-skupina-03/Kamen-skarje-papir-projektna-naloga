@@ -1,17 +1,15 @@
-import os
-import json
-import requests
+import os, json, requests
 from random import randint
 from dotenv import load_dotenv
 
 load_dotenv()
 MOZNOSTI = ['Kamen', 'Škarje', 'Papir']
 MOZNOSTI_2 = ['Kamen', 'Škarje', 'Papir', 'Voda', 'Ogenj']
-DATOTEKA_KSP = 'datoteke/ksp.json'
-DATOTEKA_KSPOV = 'datoteke/kspov.json'
 ZACETEK = 'Zacetek'
 
 DATA_URL = os.environ["DATA_URL"]
+DATOTEKA_KSP = os.environ["DATOTEKA_KSP"]
+DATOTEKA_KSPOV = os.environ["DATOTEKA_KSPOV"]
 
 class Igra:
 
@@ -271,57 +269,6 @@ class KSP(Datoteka):
             print(f"[get_id_ksp] fetch from {url} failed: {e}", flush=True)
             self.nastavi_id(0)
 
-    # Treba je upadtetati na novo podatkovno bazo
-    #def load_user_history_ksp(self):
-    #    conn = psycopg2.connect(DB_URL)
-    #    try:
-    #        with conn.cursor() as cur:
-    #            cur.execute(
-    #                """
-    #                SELECT game_id, player, computer
-    #                FROM ksp
-    #                WHERE username = %s
-    #                ORDER BY game_id
-    #                """,
-    #                (self.uporabnik,)
-    #            )
-    #            rows = cur.fetchall()
-    #
-    #        user_games = {
-    #            str(gid): [player, computer]
-    #            for gid, player, computer in rows
-    #        }
-    #
-    #        with open(DATOTEKA_KSP, "r", encoding="utf-8") as f:
-    #                try:
-    #                    all_data = json.load(f)
-    #                except json.JSONDecodeError:
-    #                    all_data = {}
-    #
-    #        existing = all_data.get(self.uporabnik, {})
-    #        existing.update(user_games)
-    #        all_data[self.uporabnik] = existing
-    #
-    #        with open(DATOTEKA_KSP, "w", encoding="utf-8") as f:
-    #            json.dump(all_data, f, indent=2, ensure_ascii=False)
-    #
-    #    finally:
-    #        conn.close()
-
-    # Treba je upadtetati na novo podatkovno bazo
-    #def delete_ksp(self):
-    #    conn = psycopg2.connect(DB_URL)
-    #    try:
-    #        with conn.cursor() as cur:
-    #            cur.execute(
-    #                "DELETE FROM ksp WHERE username = %s",
-    #                (self.uporabnik,)
-    #            )
-    #        conn.commit()
-    #        self.id = 0
-    #    finally:
-    #        conn.close()
-        
 #=========================================================================================================================================================
 
 class KSPOV(Datoteka):
@@ -427,52 +374,6 @@ class KSPOV(Datoteka):
             # Log + safe fallback
             print(f"[get_id_kspov] fetch from {url} failed: {e}", flush=True)
             self.nastavi_id(0)
-
-    # Treba je upadtetati na novo podatkovno bazo
-    #def load_user_history_kspov(self):
-    #    conn = psycopg2.connect(DB_URL)
-    #    try:
-    #        with conn.cursor() as cur:
-    #            cur.execute(
-    #            """
-    #             SELECT game_id, player, computer
-    #             FROM kspov
-    #             WHERE username = %s
-    #             ORDER BY game_id
-    #            """,
-    #            (self.uporabnik,)
-    #            )
-    #            rows = cur.fetchall()
-    #        user_games = { str(gid): [player, computer] for gid, player, computer in rows }
-    #
-    #        with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as f:
-    #            try:
-    #                all_data = json.load(f)
-    #            except json.JSONDecodeError:
-    #                all_data = {}
-    #            
-    #        existing = all_data.get(self.uporabnik, {})
-    #        existing.update(user_games)         # add/overwrite only those game_ids
-    #        all_data[self.uporabnik] = existing
-    #
-    #        with open(DATOTEKA_KSPOV, "w", encoding="utf-8") as f:
-    #            json.dump(all_data, f, indent=2, ensure_ascii=False)
-    #    finally:
-    #        conn.close()
-
-    # Treba je upadtetati na novo podatkovno bazo
-    #def delete_kspov(self):
-    #    conn = psycopg2.connect(DB_URL)
-    #    try:
-    #        with conn.cursor() as cur:
-    #            cur.execute(
-    #                "DELETE FROM kspov WHERE username = %s",
-    #                (self.uporabnik,)
-    #            )
-    #        conn.commit()
-    #        self.id = 0
-    #    finally:
-    #        conn.close()
 
 #pomembno je da beležim rezultat igre in sicer to lahko shranim v datoteko kot {id_igre: [igralec, racunalnik]
 
