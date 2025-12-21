@@ -50,7 +50,7 @@ function BrisiKSP() {
 }
 
 function BrisiKSPOV() {
-    fetch('/brisi_kspov/', {
+    fetch('/brisi_kspov', {
         method: 'DELETE',
         headers: { "Content-Type": "application/json" }
     })

@@ -13,6 +13,6 @@
     % end
     <div class="back">
         <button type="button" class="zacetni" onclick="BrisiKSPOV()">BRIŠI</button>
-        <button type="button" class="zacetni" onclick="window.location.href='/kspov/'">NAZAJ</button>
+        <button type="button" class="zacetni" onclick="window.location.href='/kspov'">NAZAJ</button>
     </div>
 </div>

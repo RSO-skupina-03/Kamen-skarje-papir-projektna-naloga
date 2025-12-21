@@ -305,14 +305,14 @@ def brisi_igre_kps():
     response.set_header("Location", "/zgodovina_ksp")
     return
 #====================================================================================================================================================    
-@bottle.post("/kspov/")
+@bottle.post("/kspov")
 def izbira_igralca_kspov_frontend():
     # 1) id igre iz cookie-ja
     id_cookie = request.get_cookie(ID_IGRE_COKOLADNI_PISKOT, secret=STARI_SLOVENSKI_PREGOVOR)
     
     if id_cookie is None:
         response.status = 303
-        response.set_header("Location", "/nova_igra_kspov/")
+        response.set_header("Location", "/nova_igra_kspov")
         return
 
     # 2) izbrano orožje iz formularja
@@ -321,7 +321,7 @@ def izbira_igralca_kspov_frontend():
     except (TypeError, ValueError):
         # nič ni izbral → samo reload
         response.status = 303
-        response.set_header("Location", "/kspov/")
+        response.set_header("Location", "/kspov")
         return
 
     # 3) ali je subscriber (isti trik kot v GET)
@@ -339,10 +339,10 @@ def izbira_igralca_kspov_frontend():
 
     # 5) po potezi gremo nazaj na GET (da se nova situacija nariše)
     response.status = 303
-    response.set_header("Location", "/kspov/")
+    response.set_header("Location", "/kspov")
     return
 
-@bottle.route("/nova_igra_kspov/", method=["GET", "HEAD"])
+@bottle.route("/nova_igra_kspov", method=["GET", "HEAD"])
 def nova_igra_kspov_frontend():
     if request.method == "HEAD":
         # HEAD vprašanje še vedno rečemo "bo nova igra"
@@ -357,12 +357,12 @@ def nova_igra_kspov_frontend():
     # 2) nastavimo cookie z ID-jem igre
     response.set_cookie(ID_IGRE_COKOLADNI_PISKOT, str(id_nova_igra), path="/", secret=STARI_SLOVENSKI_PREGOVOR,)
 
-    # 3) preusmerimo nazaj na "/" (kjer bo klic /kspov/state)
+    # 3) preusmerimo nazaj na "/" (kjer bo klic /kspovstate)
     response.status = 303
-    response.set_header("Location", "/kspov/")
+    response.set_header("Location", "/kspov")
     return
 
-@bottle.route("/kspov/", method=["GET", "HEAD"])
+@bottle.route("/kspov", method=["GET", "HEAD"])
 def igra_kspov_frontend():
     if request.method == "HEAD":
         response.status = 200
@@ -374,7 +374,7 @@ def igra_kspov_frontend():
     # če ni id_igre → frontend odloči, da rabimo novo igro
     if id_cookie is None:
         response.status = 303
-        response.set_header("Location", "/nova_igra_kspov/")
+        response.set_header("Location", "/nova_igra_kspov")
         return
 
     # iz narocnik cookieja izpeljemo is_subscriber
@@ -391,7 +391,7 @@ def igra_kspov_frontend():
     # 3) frontend spet samo odloči, kaj narediti
     if data.get("action") == "new_game":
         response.status = 303
-        response.set_header("Location", "/nova_igra_kspov/")
+        response.set_header("Location", "/nova_igra_kspov")
         return
 
     # action == "ok"
@@ -401,7 +401,7 @@ def igra_kspov_frontend():
 
     return bottle.template("views/kspov.tpl", igra=igra, id_igre=id_igre, is_subscriber=is_subscriber)
 
-@bottle.route('/zgodovina_kspov/', method=['GET','HEAD'])
+@bottle.route('/zgodovina_kspov', method=['GET','HEAD'])
 def prikazi_zgodovino():
     if request.method == 'HEAD':
         response.status = 200
@@ -418,7 +418,7 @@ def prikazi_zgodovino():
     seznam_iger = model.data_kspov_history(mail)
     return bottle.template("views/zgodovina_kspov.tpl", igre=seznam_iger, uporabnik=uporabnik.upper())
 
-@bottle.route('/brisi_kspov/', method=['DELETE','HEAD'])
+@bottle.route('/brisi_kspov', method=['DELETE','HEAD'])
 def brisi_igre_kps():
     if request.method == 'HEAD':
         response.status = 200
@@ -431,7 +431,7 @@ def brisi_igre_kps():
     
     model.data_delete_kspov(uporabnik)
     response.status = 303
-    response.set_header("Location", "/zgodovina_kspov/")
+    response.set_header("Location", "/zgodovina_kspov")
     return
 
 app = bottle.default_app()

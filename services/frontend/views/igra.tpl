@@ -5,7 +5,7 @@
     <form action="/ksp" method="GET">
         <button type="submit" class="gumb">KŠP</button>
     </form>
-    <form action="/kspov/" method="GET">
+    <form action="/kspov" method="GET">
         <button type="submit" class="gumb">KŠPOV</button>
     </form>
 </div>

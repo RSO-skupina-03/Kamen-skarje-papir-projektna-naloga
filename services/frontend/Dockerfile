@@ -17,6 +17,7 @@ RUN python3 -m venv .venv \
 COPY conf/ conf/
 COPY static/ static/
 COPY views/ views/
+COPY model.py model.py
 COPY spletni_umesnik.py spletni_umesnik.py
 
 EXPOSE 8080
