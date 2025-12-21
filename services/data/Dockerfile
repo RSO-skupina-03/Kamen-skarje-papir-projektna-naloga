@@ -16,10 +16,9 @@ RUN python3 -m venv .venv \
 
 
 COPY conf/ conf/
-COPY datoteke/ datoteke/
 COPY model.py model.py
 COPY spletni_umesnik.py spletni_umesnik.py
 
-EXPOSE 8081
+EXPOSE 8083
 
 CMD ["gunicorn", "-c", "conf/gunicorn.conf.py", "spletni_umesnik:app"]
