@@ -1,4 +1,4 @@
-import os, json, requests
+import os, json, requests, redis
 from random import randint
 from dotenv import load_dotenv
 
@@ -8,8 +8,6 @@ MOZNOSTI_2 = ['Kamen', 'Škarje', 'Papir', 'Voda', 'Ogenj']
 ZACETEK = 'Zacetek'
 
 DATA_URL = os.environ["DATA_URL"]
-DATOTEKA_KSP = os.environ["DATOTEKA_KSP"]
-DATOTEKA_KSPOV = os.environ["DATOTEKA_KSPOV"]
 
 class Igra:
 
@@ -146,79 +144,113 @@ def nova_igra_1():
 #=========================================================================================================================================================
 
 class Datoteka:
-
     def __init__(self):
         self.igre = {}
         self.uporabnik = ""
         self.id = 0
 
+        self.redis = redis.Redis(
+            host=os.environ["REDIS_HOST"],
+            port=int(os.environ["REDIS_PORT"]),
+            db=int(os.environ["REDIS_DB"]),
+            decode_responses=True,
+        )
+
+        # print("REDIS:", self.redis.connection_pool.connection_kwargs)
+        # print("PING:", self.redis.ping())
+
     def nastavi_uporabnika(self, uporabnik):
         self.uporabnik = uporabnik
 
+    def _ensure_user(self):
+        if not self.uporabnik:
+            raise ValueError("Uporabnik ni nastavljen. Pokliči nastavi_uporabnika(uporabnik).")
+
     def prosti_id_igre(self):
-        self.id = self.id + 1
-        return self.id
-    
+        self._ensure_user()
+
+        if not hasattr(self, "_next_id_key"):
+            # fallback if someone uses Datoteka directly
+            self.id += 1
+            return self.id
+
+        new_id = int(self.redis.incr(self._next_id_key()))
+        self.id = new_id
+        return new_id
+
     def nastavi_id(self, id):
-        self.id = id
+        self._ensure_user()
+        self.id = int(id)
+
+        if hasattr(self, "_next_id_key"):
+            self.redis.set(self._next_id_key(), str(self.id))
+
 
 #============================================================================================================================================================
    
 class KSP(Datoteka):
+    # Keys live ONLY here (as you want)
+    def _games_key(self) -> str:
+        self._ensure_user()
+        return f"ksp:{self.uporabnik}:games"
+
+    def _next_id_key(self) -> str:
+        self._ensure_user()
+        return f"ksp:{self.uporabnik}:next_id"
 
     def nova_igra(self):
         self.preberi_iz_datoteke()
         nov_id = self.prosti_id_igre()
-        sveza_igra = nova_igra()
 
+        sveza_igra = nova_igra()  # your existing factory
         self.igre[nov_id] = sveza_igra
+
         self.shrani_v_datoteko()
         return nov_id
 
     def potek_igre(self, id_igre, orozje):
         self.preberi_iz_datoteke()
-        trenutna_igra = self.igre[id_igre]
 
+        if id_igre not in self.igre:
+            raise KeyError(f"Igra z id={id_igre} ne obstaja za uporabnika {self.uporabnik}")
+
+        trenutna_igra = self.igre[id_igre]
         trenutna_igra.potek_igre(orozje)
         self.igre[id_igre] = trenutna_igra
 
         self.shrani_v_datoteko()
 
     def shrani_v_datoteko(self):
-        # Preberi obstoječe podatke
-        if os.path.exists(DATOTEKA_KSP) and os.stat(DATOTEKA_KSP).st_size > 0:
-            with open(DATOTEKA_KSP, "r", encoding="utf-8") as izhodna:
-                vsi_uporabniki = json.load(izhodna)
-        else:
-            vsi_uporabniki = {}
+        key = self._games_key()
 
-        # Shranimo igre za trenutnega uporabnika
-        vsi_uporabniki[self.uporabnik] = {
-            id_igre: (igra.igralec, igra.racunalnik) for id_igre, igra in self.igre.items()
+        mapping = {
+        str(id_igre): json.dumps([int(igra.igralec), int(igra.racunalnik)], ensure_ascii=False)
+        for id_igre, igra in self.igre.items()
         }
 
-        with open(DATOTEKA_KSP, "w", encoding="utf-8") as izhodna:
-            json.dump(vsi_uporabniki, izhodna, ensure_ascii=False, indent=2)
+        pipe = self.redis.pipeline()
 
+        if not mapping:
+            pipe.delete(key)
+            pipe.execute()
+            return
+        
+        pipe.hset(key, mapping=mapping)
+        pipe.expire(key, 15 * 60)
+        pipe.execute()
 
     def preberi_iz_datoteke(self):
-        if not os.path.exists(DATOTEKA_KSP) or os.stat(DATOTEKA_KSP).st_size == 0:
+        key = self._games_key() 
+        igre_map = self.redis.hgetall(key)
+
+        if not igre_map:
             self.igre = {}
             return
 
-        with open(DATOTEKA_KSP, "r", encoding="utf-8") as vhodna:
-            vsi_uporabniki = json.load(vhodna)
-
-        # Preberi samo igre za prijavljenega uporabnika
-        if self.uporabnik in vsi_uporabniki:
-            igre = vsi_uporabniki[self.uporabnik]
-            self.igre = {
-                int(id_igre): KamenSkarjePapir(igralec, racunalnik)
-                for id_igre, (igralec, racunalnik) in igre.items()
-            }
-        else:
-            self.igre = {}
-
+        self.igre = {}
+        for id_igre_str, raw in igre_map.items():
+            igralec, racunalnik = json.loads(raw)
+            self.igre[int(id_igre_str)] = KamenSkarjePapir(int(igralec), int(racunalnik))
 
     def insert_game_ksp(self, game_id, player_score, computer_score) -> int:
         """
@@ -245,40 +277,49 @@ class KSP(Datoteka):
             return int(data.get("affected", 1))
         except requests.RequestException as e:
             raise RuntimeError(f"insert_game_ksp failed: {e}")
-
-    def get_id_ksp(self):
-        """
-        Ask the Data microservice for a new game id and set it on this instance.
-        Expects JSON like: {"id": 123} (also accepts "game_id" or "next_id").
-        """
+        
+    def get_id_ksp(self) -> int:
         url = f"{DATA_URL}/data/ksp/get/id"
-        try:
-            # If your service needs the username, send it along:
-            r = requests.get(url, params={"username": self.uporabnik}, timeout=(2, 6))
-            r.raise_for_status()
-            payload = r.json() or {}
+        r = requests.get(url, params={"username": self.uporabnik}, timeout=(2, 6))
+        r.raise_for_status()
+        payload = r.json() or {}
 
-            # Accept common key names
-            new_id = (payload.get("game_id"))
-            if new_id is None:
-                raise ValueError(f"Missing 'id' in response: {payload}")
+        counter_key = self._next_id_key()
 
-            self.nastavi_id(int(new_id))
-        except Exception as e:
-            # Log + safe fallback
-            print(f"[get_id_ksp] fetch from {url} failed: {e}", flush=True)
-            self.nastavi_id(0)
+        # treat payload["game_id"] as MAX used id (allows 0)
+        if "game_id" not in payload or payload["game_id"] is None:
+            raise ValueError(f"Missing game_id in response: {payload}")
 
+        db_max = int(payload["game_id"])   # max used id in DB
+        new_id = db_max + 1                # next id to use
+
+        # Sync Redis counter to at least db_max (NOT new_id)
+        curr = int(self.redis.get(counter_key) or 0)
+        if curr < db_max:
+            self.redis.set(counter_key, str(db_max))
+
+        # Set local id to the id we will use
+        self.nastavi_id(new_id)
+        return new_id
 #=========================================================================================================================================================
 
 class KSPOV(Datoteka):
 
+    def _games_key(self) -> str:
+        self._ensure_user()
+        return f"kspov:{self.uporabnik}:games"
+
+    def _next_id_key(self) -> str:
+        self._ensure_user()
+        return f"kspov:{self.uporabnik}:next_id"
+
     def nova_igra_1(self):
         self.preberi_iz_datoteke()
         nov_id = self.prosti_id_igre()
-        sveza_igra = nova_igra_1()
 
+        sveza_igra = nova_igra_1()  # your existing factory
         self.igre[nov_id] = sveza_igra
+
         self.shrani_v_datoteko()
         return nov_id
 
@@ -292,39 +333,46 @@ class KSPOV(Datoteka):
         self.shrani_v_datoteko()
 
 
-    def shrani_v_datoteko(self):
-        # Preberi obstoječe podatke
-        if os.path.exists(DATOTEKA_KSPOV) and os.stat(DATOTEKA_KSPOV).st_size > 0:
-            with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as izhodna:
-                vsi_uporabniki = json.load(izhodna)
-        else:
-            vsi_uporabniki = {}
+    def potek_igre(self, id_igre, orozje):
+        self.preberi_iz_datoteke()
 
-        # Shranimo igre za trenutnega uporabnika
-        vsi_uporabniki[self.uporabnik] = {
-            id_igre: (igra.igralec, igra.racunalnik) for id_igre, igra in self.igre.items()
+        if id_igre not in self.igre:
+            raise KeyError(f"Igra z id={id_igre} ne obstaja za uporabnika {self.uporabnik}")
+
+        trenutna_igra = self.igre[id_igre]
+        trenutna_igra.potek_igre(orozje)
+        self.igre[id_igre] = trenutna_igra
+
+        self.shrani_v_datoteko()
+
+    def shrani_v_datoteko(self):
+        mapping = {
+            str(id_igre): json.dumps([int(igra.igralec), int(igra.racunalnik)], ensure_ascii=False)
+            for id_igre, igra in self.igre.items()
         }
 
-        with open(DATOTEKA_KSPOV, "w", encoding="utf-8") as izhodna:
-            json.dump(vsi_uporabniki, izhodna, ensure_ascii=False, indent=2)
+        key = self._games_key()
+        pipe = self.redis.pipeline()
 
+        pipe.delete(key)
+        if mapping:
+            pipe.hset(key, mapping=mapping)
+            pipe.expire(key, 15 * 60)  # 15 minutes
+
+        pipe.execute()
 
     def preberi_iz_datoteke(self):
-        if not os.path.exists(DATOTEKA_KSPOV) or os.stat(DATOTEKA_KSPOV).st_size == 0:
+        key = self._games_key() 
+        igre_map = self.redis.hgetall(key)
+
+        if not igre_map:
             self.igre = {}
             return
 
-        with open(DATOTEKA_KSPOV, "r", encoding="utf-8") as vhodna:
-            vsi_uporabniki = json.load(vhodna)
-
-        if self.uporabnik in vsi_uporabniki:
-            igre = vsi_uporabniki[self.uporabnik]
-            self.igre = {
-                int(id_igre): KamenSkarjePapirOgenjVoda(igralec, racunalnik)
-                for id_igre, (igralec, racunalnik) in igre.items()
-            }
-        else:
-            self.igre = {}
+        self.igre = {}
+        for id_igre_str, raw in igre_map.items():
+            igralec, racunalnik = json.loads(raw)
+            self.igre[int(id_igre_str)] = KamenSkarjePapirOgenjVoda(int(igralec), int(racunalnik))
     
     def insert_game_kspov(self, game_id, player_score, computer_score) -> int:
         """
@@ -352,28 +400,29 @@ class KSPOV(Datoteka):
         except requests.RequestException as e:
             raise RuntimeError(f"insert_game_kspov failed: {e}")
 
-    def get_id_kspov(self):
-        """
-        Ask the Data microservice for a new game id and set it on this instance.
-        Expects JSON like: {"id": 123} (also accepts "game_id" or "next_id").
-        """
+    def get_id_kspov(self) -> int:
         url = f"{DATA_URL}/data/kspov/get/id"
-        try:
-            # If your service needs the username, send it along:
-            r = requests.get(url, params={"username": self.uporabnik}, timeout=(2, 6))
-            r.raise_for_status()
-            payload = r.json() or {}
+        r = requests.get(url, params={"username": self.uporabnik}, timeout=(2, 6))
+        r.raise_for_status()
+        payload = r.json() or {}
 
-            # Accept common key names
-            new_id = (payload.get("game_id"))
-            if new_id is None:
-                raise ValueError(f"Missing 'id' in response: {payload}")
+        counter_key = self._next_id_key()
 
-            self.nastavi_id(int(new_id))
-        except Exception as e:
-            # Log + safe fallback
-            print(f"[get_id_kspov] fetch from {url} failed: {e}", flush=True)
-            self.nastavi_id(0)
+        # treat payload["game_id"] as MAX used id (allows 0)
+        if "game_id" not in payload or payload["game_id"] is None:
+            raise ValueError(f"Missing game_id in response: {payload}")
+
+        db_max = int(payload["game_id"])   # max used id in DB
+        new_id = db_max + 1                # next id to use
+
+        # Sync Redis counter to at least db_max (NOT new_id)
+        curr = int(self.redis.get(counter_key) or 0)
+        if curr < db_max:
+            self.redis.set(counter_key, str(db_max))
+
+        # Set local id to the id we will use
+        self.nastavi_id(new_id)
+        return new_id
 
 #pomembno je da beležim rezultat igre in sicer to lahko shranim v datoteko kot {id_igre: [igralec, racunalnik]
 

@@ -1,4 +1,4 @@
-import os, json, bottle, threading, model
+import os, json, bottle, threading, model, redis
 from bottle import request, response
 from dotenv import load_dotenv
 
@@ -22,60 +22,66 @@ def readiness_check():
     if request.method == 'HEAD':
         response.status = 200
         return
-    
-    # Check required environment variables
+
     checks = {
         "status": "ready",
         "service": "ksp-game-engine",
         "checks": {}
     }
-    
-    # Check if required environment variables are set
+
     try:
         db_url = os.environ.get("DB_URL")
-        datoteka_ksp = os.environ.get("DATOTEKA_KSP")
-        datoteka_kspov = os.environ.get("DATOTEKA_KSPOV")
-        
+        redis_host = os.environ.get("REDIS_HOST")
+        redis_port = os.environ.get("REDIS_PORT")
+        redis_db = os.environ.get("REDIS_DB")
+
         checks["checks"]["environment"] = {
             "DB_URL": "ok" if db_url else "missing",
-            "DATOTEKA_KSP": "ok" if datoteka_ksp else "missing",
-            "DATOTEKA_KSP": "ok" if datoteka_kspov else "missing"
+            "REDIS_HOST": "ok" if redis_host else "missing",
+            "REDIS_PORT": "ok" if redis_port else "missing",
+            "REDIS_DB": "ok" if redis_db else "missing"
         }
-        
-        # Check if data directory is writable
-        try:
-            datoteke_dir = 'datoteke'
-            if not os.path.exists(datoteke_dir):
-                os.makedirs(datoteke_dir, exist_ok=True)
-            # Try to write a test file
-            test_file = os.path.join(datoteke_dir, '.health_check')
-            with open(test_file, 'w') as f:
-                f.write('ok')
-            os.remove(test_file)
-            checks["checks"]["filesystem"] = "ok"
-        except Exception as e:
-            checks["checks"]["filesystem"] = f"error: {str(e)}"
-        
-        # Determine overall readiness
+
+        # Redis ping check
+        redis_check = {"status": "skipped"}
+        if redis_host and redis_port and redis_db is not None:
+            try:
+                rds = redis.Redis(
+                    host=redis_host,
+                    port=int(redis_port),
+                    db=int(redis_db),
+                    socket_connect_timeout=1,
+                    socket_timeout=1,
+                    decode_responses=True,
+                )
+                pong = rds.ping()
+                redis_check = {"status": "ok" if pong else "fail"}
+            except Exception as e:
+                redis_check = {"status": "fail", "error": str(e)}
+
+        checks["checks"]["redis"] = redis_check
+
+        # Determine overall readiness (env vars + redis must be ok)
         all_ok = (
             db_url and
-            datoteka_ksp and
-            datoteka_kspov and
-            checks["checks"]["filesystem"] == "ok"
+            redis_host and
+            redis_port and
+            (redis_db is not None) and
+            checks["checks"]["redis"]["status"] == "ok"
         )
-        
+
         if all_ok:
             response.status = 200
             checks["status"] = "ready"
         else:
-            response.status = 503  # Service Unavailable
+            response.status = 503
             checks["status"] = "not ready"
-            
+
     except Exception as e:
         response.status = 503
         checks["status"] = "error"
         checks["error"] = str(e)
-    
+
     response.content_type = 'application/json'
     return json.dumps(checks, indent=2)
 
@@ -96,8 +102,8 @@ def init_user():
         kspov.get_id_kspov()
         ksp.get_id_ksp()
     else:
-        ksp.nastavi_id(len(ksp.igre))
-        kspov.nastavi_id(len(kspov.igre))
+        ksp.nastavi_id(ksp.prosti_id_igre())
+        kspov.nastavi_id(kspov.prosti_id_igre())
     # po želji vrneš ID-je, če jih frontend kdaj rabi
     payload = {
         "status": "ok",
@@ -128,7 +134,7 @@ def compute_ksp_state(id_igre: int, is_subscriber: bool):
         else:
             ksp.igre.pop(id_igre, None)
             ksp.shrani_v_datoteko()
-            ksp.nastavi_id(len(ksp.igre))
+            ksp.nastavi_id(ksp.prosti_id_igre())
 
     return {
         "action": "ok",
