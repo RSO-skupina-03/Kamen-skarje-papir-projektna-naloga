@@ -1,6 +1,10 @@
 import os, json, bottle, model
 from bottle import request, response
 from dotenv import load_dotenv
+from gateway import (
+    log_request, rate_limit, get_metrics, proxy_to_backend,
+    circuit_breaker, cors_enable, health_check_backend
+)
 
 load_dotenv()
 
@@ -54,6 +58,9 @@ def readiness_check():
         auth_url = os.environ.get("AUTH_URL")
         auth_local = os.environ.get("AUTH_LOCAL")
         data_url = os.environ.get("DATA_URL")
+        redis_host = os.environ.get("REDIS_HOST")
+        redis_port = os.environ.get("REDIS_PORT")
+        redis_db = os.environ.get("REDIS_DB")
         
         checks["checks"]["environment"] = {
             "SESSION_COOKIE_SECRET": "ok" if session_secret else "missing",
@@ -61,8 +68,26 @@ def readiness_check():
             "FRONTEND_URL": "ok" if frontend_url else "missing",
             "AUTH_URL": "ok" if auth_url else "missing",
             "AUTH_LOCAL": "ok" if auth_local else "missing",
-            "DATA_URL": "ok" if data_url else "missing"
+            "DATA_URL": "ok" if data_url else "missing",
+            "REDIS_HOST": "ok" if redis_host else "missing",
+            "REDIS_PORT": "ok" if redis_port else "missing",
+            "REDIS_DB": "ok" if redis_db else "missing"
         }
+        
+        # Check Redis connection
+        redis_check = {"status": "skipped"}
+        if redis_host and redis_port and redis_db is not None:
+            try:
+                from gateway import get_redis_client
+                rds = get_redis_client()
+                if rds:
+                    pong = rds.ping()
+                    redis_check = {"status": "ok" if pong else "fail"}
+                else:
+                    redis_check = {"status": "fail", "error": "Could not connect"}
+            except Exception as e:
+                redis_check = {"status": "fail", "error": str(e)}
+        checks["checks"]["redis"] = redis_check
 
         # Determine overall readiness
         all_ok = (
@@ -71,7 +96,11 @@ def readiness_check():
             frontend_url and
             auth_url and
             auth_local and
-            data_url
+            data_url and
+            redis_host and
+            redis_port and
+            (redis_db is not None) and
+            checks["checks"]["redis"]["status"] == "ok"
         )
         
         if all_ok:
@@ -90,12 +119,43 @@ def readiness_check():
     return json.dumps(checks, indent=2)
 
 @bottle.get("/env.js")
+@log_request
 def env_js():
     cfg = {"AUTH_URL": os.environ["AUTH_URL"]}
     response.content_type = "application/javascript; charset=utf-8"
     return "window.__ENV__ = " + json.dumps(cfg) + ";"
 
+@bottle.get("/metrics")
+@log_request
+def metrics():
+    response.content_type = "application/json"
+    return json.dumps(get_metrics(), indent=2)
+
+@bottle.get("/gateway/health")
+@log_request
+def gateway_health():
+    response.content_type = "application/json"
+    
+    game_engine_url = os.environ.get("GAME_ENGINE_URL", "")
+    auth_local = os.environ.get("AUTH_LOCAL", "")
+    data_url = os.environ.get("DATA_URL", "")
+    
+    backend_health = {}
+    if game_engine_url:
+        backend_health["game_engine"] = health_check_backend("game-engine", game_engine_url)
+    if auth_local:
+        backend_health["auth"] = health_check_backend("auth", auth_local)
+    if data_url:
+        backend_health["data"] = health_check_backend("data", data_url)
+    
+    return json.dumps({
+        "gateway": "healthy",
+        "backends": backend_health
+    }, indent=2)
+
 @bottle.route('/', method=['GET','HEAD'])
+@log_request
+@rate_limit(max_requests=60, window_seconds=60)
 def login():
     if request.method == 'HEAD':
         response.status = 200
@@ -112,6 +172,8 @@ def login_preflight():
     return
 
 @bottle.route("/frontend/login", method=["PUT", "HEAD"])
+@log_request
+@rate_limit(max_requests=20, window_seconds=60)
 def login():
     if request.method == "HEAD":
         response.status = 303
@@ -136,6 +198,8 @@ def login():
     return
 
 @bottle.get("/auth/finalize")
+@log_request
+@rate_limit(max_requests=30, window_seconds=60)
 def finalize():
     ticket = bottle.request.query.get("ticket")
     if not ticket:
@@ -175,6 +239,8 @@ def igra():
 
 #================================================================================================================================================
 @bottle.post("/ksp")
+@log_request
+@rate_limit(max_requests=200, window_seconds=60)
 def izbira_igralca_ksp_frontend():
     # 1) id igre iz cookie-ja
     id_cookie = bottle.request.get_cookie(ID_IGRE_COKOLADNI_PISKOT, secret=STARI_SLOVENSKI_PREGOVOR)
@@ -211,6 +277,8 @@ def izbira_igralca_ksp_frontend():
     return
 
 @bottle.route("/nova_igra_ksp", method=["GET", "HEAD"])
+@log_request
+@rate_limit(max_requests=50, window_seconds=60)
 def nova_igra_ksp_frontend():
     if request.method == "HEAD":
         # HEAD vprašanje še vedno rečemo "bo nova igra"
@@ -231,6 +299,8 @@ def nova_igra_ksp_frontend():
     return
 
 @bottle.route("/ksp", method=["GET", "HEAD"])
+@log_request
+@rate_limit(max_requests=100, window_seconds=60)
 def igra_ksp_frontend():
     if request.method == "HEAD":
         response.status = 200
@@ -290,6 +360,8 @@ def prikazi_zgodovino():
     return bottle.template("views/zgodovina_ksp.tpl", igre=seznam_iger, uporabnik=uporabnik.upper())
 
 @bottle.route('/brisi_ksp', method=['DELETE','HEAD'])
+@log_request
+@rate_limit(max_requests=20, window_seconds=60)
 def brisi_igre_kps():
     if request.method == 'HEAD':
         response.status = 200
@@ -419,6 +491,8 @@ def prikazi_zgodovino():
     return bottle.template("views/zgodovina_kspov.tpl", igre=seznam_iger, uporabnik=uporabnik.upper())
 
 @bottle.route('/brisi_kspov', method=['DELETE','HEAD'])
+@log_request
+@rate_limit(max_requests=20, window_seconds=60)
 def brisi_igre_kps():
     if request.method == 'HEAD':
         response.status = 200

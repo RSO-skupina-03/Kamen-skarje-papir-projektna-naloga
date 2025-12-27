@@ -11,13 +11,15 @@ RUN python3 -m venv .venv \
     bottle>=0.12.25 \
     requests>=2.32.0 \
     python-dotenv>=1.0.0 \
-    gunicorn>=21.2.0
+    gunicorn>=21.2.0 \
+    redis>=5.0.0
 
 
 COPY conf/ conf/
 COPY static/ static/
 COPY views/ views/
 COPY model.py model.py
+COPY gateway.py gateway.py
 COPY spletni_umesnik.py spletni_umesnik.py
 
 EXPOSE 8080
