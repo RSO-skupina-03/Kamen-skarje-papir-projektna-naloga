@@ -18,7 +18,7 @@ def error404(error):
 @bottle.error(401)
 def error401(error):
      return bottle.template('views/error.tpl')
- 
+    
 @bottle.error(500)
 def error500(error):
      return bottle.template('views/error.tpl')
@@ -223,7 +223,7 @@ def finalize():
     bottle.response.set_header("Location", "/igra")
     return ""
 
-@bottle.route('/igra', method=['GET','HEAD'])
+@bottle.route(' ', method=['GET','HEAD'])
 def igra():
     if request.method == 'HEAD':
         response.status = 200
