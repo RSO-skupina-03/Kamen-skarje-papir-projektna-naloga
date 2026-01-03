@@ -1,111 +1,94 @@
+# RPS — Microservices Web App (Rock–Paper–Scissors & Rock–Paper–Scissors–Fire–Water)
 
-# Rock Paper Scissors Web Application and Command Line Application
+KŠP is a microservices-based web application for playing:
+- **Rock–Paper–Scissors (RPS)**: winner is decided after **7** rounds
+- **Rock–Paper–Scissors–Fire–Water (RPSFW)**: winner is decided after **15** rounds
 
-[![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
----
-
-## Project overview
-This project contains a web and command line application for the game [Rock Paper Scissors](https://en.wikipedia.org/wiki/Rock_paper_scissors#/media/File:Rock-paper-scissors.svg) and the game [Rock Paper Scissors Water Fire](https://en.wikipedia.org/wiki/Rock_paper_scissors#/media/File:Rpsfw_game.svg). It runs on Linux. The web application supports HTTP/1.1, HTTP/2, and HTTP/3, and user information is stored on an LDAP server. The Rock Paper Scissors game is played for 7 rounds and the Rock Paper Scissors Water Fire game is played for 15 rounds.
-
-**Tech stack:**
-- Frontend: HTML, CSS and JavaScript
-- Backend: Bottle (WSGI), Hypercorn (ASGI/WSGI server)
-- Database: CockroachDB (postgreSQL)
----
-## Project stucture
-```
-.
-├─ Kamen-skarje-papir-projektna-naloga/
-│  ├─ certs/                  # Self-signed certificates for HTTP/2, HTTP/3
-│  ├─ conf/                   # Configuration files for Hypercorn           
-│  ├─ datoteke/               # Json files for application data
-│  ├─ static/                 # Frontend scripts                  
-|  |  ├─ script.js
-|  |  └─ style.css      
-│  ├─ views/                  # Diffrent HTML pages
-|  ├─ .env                    # Environment variables
-|  ├─ model.py                # Logic for game
-|  ├─ spletni_umesnik.py      # REST services, web interface
-|  ├─ tekstovni_umesnik.py    # Logic for command line interface
-|  └─ populate.ldif           # Example of LDAP users
-```
+The player plays against the computer. The system supports three user roles:
+- **Guest** — basic gameplay
+- **User** — basic gameplay
+- **Subscriber** — authenticates via Google (OAuth2/OIDC) and can access game history
 
 ---
 
-## Installation & Build
-Before running the web application, you need to install the required Python libraries and set up the LDAP server. An example of users for the LDAP server is provided in the `populate.ldif` file, where passwords are stored as hash values (username == password).
-```bash
-# Required Python libraries for the web application
-python3 -m venv .venv
-source .venv/bin/activate
-sudo apt install -y python3-dev libpq-dev
-pip install psycopg2 bottle hypercorn aioquic python-dotenv ldap3
+## 1. Architecture
 
-# LDAP server setup
-sudo apt install slapd ldap-utils
-sudo dpkg-reconfigure slapd
+### 1.1 Services
+| Service | Repo folder | Host (local) | Docker Compose hostname | Responsibility |
+|---|---|---:|---|---|
+| Frontend, Session & API Gateway | `services/frontend` | `http://localhost:8080` | `http://frontend:8080` | UI, cookies/sessions, routes/proxies requests to backend services |
+| Game Engine | `services/game_engine` | `http://localhost:8081` | `http://game_engine:8081` | Game logic, reads/writes game state in Redis |
+| Authentication | `services/auth` | `http://localhost:8082` | `http://auth:8082` | Google OAuth2/OIDC integration, token validation, one-time ticket flow |
+| Data Service | `services/data` | `http://localhost:8083` | `http://data:8083` | Persistent storage + queries (PostgreSQL/Neon) |
 
-#for encripted password
-userPassword: slappasswd -s pass
-ldapadd -x -D "cn=admin,dc=ksp,dc=si" -W -f populate.ldif
+### 1.2 External dependencies
+- **Redis** — short-term game state storage (**TTL = 15 minutes**)
+- **PostgreSQL (Neon)** — persistent storage of game history
+- **Google Auth Platform** — OAuth2/OIDC provider for subscribers
 
-#Start LDAP server
-sudo systemctl start slapd
+### 1.3 Diagram
+<p align="center">
+  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="70%">
+</p>
 
-#Stop LDAP server
-sudo systemctl stop slapd
-```
+## 2. Health & Readiness
 
-Certificates are self-signed and created with OpenSSL. Feel free to use any other certificates, but you need to place them in the `conf` folder.  
+All microservices expose:
 
-If you want to recreate self-signed certificates, below is the script I used to generate my certificate:
-
-```bash
-# Generate self-signed certificate
-openssl genrsa -aes256 -out ca-key.pem 4096
-openssl req -new -x509 -sha256 -days 365 -key ca-key.pem -out ca.pem
-openssl genrsa -out privkey.pem 4096
-openssl req -new -sha256 -subj "/CN=KSP" -key privkey.pem -out cert.csr
-echo "subjectAltName=IP:127.0.0.1" >> extfile.cnf #IP configuration
-openssl x509 -req -sha256 -days 365 -in cert.csr -CA ca.pem -CAkey ca-key.pem -out cert.pem -extfile extfile.cnf -CAcreateserial
-cat cert.pem >> fullchain.pem
-cat ca.pem >> fullchain.pem
-sudo cp ca.pem /usr/local/share/ca-certificates/ca.crt
-sudo update-ca-certificates
-
-# After you create certificate, you need to upload the ca.pem file to the browser
-```
+- `GET/HEAD /health` — **liveness** (service process is running)
+- `GET/HEAD /ready` — **readiness** (service is ready to serve traffic; checks required environment variables and dependencies, e.g., Redis availability)
 
 ---
-## Running Application
-The web application can be run in three different configurations:
 
-- `hypercornAll.toml`: HTTP/1.1, HTTP/2, HTTP/3  
-- `hypercornBase.toml`: HTTP/2  
-- `hypercornDep.toml`: HTTP/1.1  
+## 3. Tech Stack
 
-The following table represents the ports on which the web application is listening.  
-Currently, the IP address is set to localhost (`127.0.0.1`).  
+- **Backend:** Python 3.11+, **Gunicorn** (WSGI server) + **Bottle** (web framework)
+- **Databases:** **PostgreSQL** (persistent), **Redis** (short-term state / sessions)
+- **Containers:** **Docker**, **Docker Compose**
+- **Orchestration:** **Kubernetes** (planned / optional)
+- **Communication:** **REST API**
+- **Authentication:** **OAuth 2.0 / OIDC** (Google), **JWT** usage (where applicable)
+- **CI/CD:** **GitHub Actions**
+- **API Gateway:** Frontend service acts as API gateway (**Traefik/NGINX** optional/future)
 
-| Protocol     | Port |
-|:------------:|:----:|
-| **HTTP/1.1** | 8080 |
-| **HTTP/2**   | 4333 |
-| **HTTP/3**   | 4433 |
+## 4. Running the project
+
+### 4.1 Prerequisites
+- Docker + Docker Compose
+
+### 4.2 Start
+
+In the repository root, you must update `docker-compose.yaml` with your environment values for `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `SESSION_COOKIE_SECRET`, and `DB_URL`.
+
+| Environment variable | Used by service(s) | What it represents | Example value |
+|---|---|---|---|
+| `GOOGLE_CLIENT_ID` | `auth` | Public identifier of your Google OAuth2/OIDC application (used to start the login flow). | `1234567890-abc123def456.apps.googleusercontent.com` |
+| `GOOGLE_CLIENT_SECRET` | `auth` | Secret key for your Google OAuth2/OIDC application (used to exchange the authorization code for tokens). | `GOCSPX-xxxxxxxxxxxxxxxxxxxx` |
+| `SESSION_COOKIE_SECRET` | `frontend`, `auth` | Secret used to sign/encrypt session cookies so they can’t be forged/tampered with. | `change-this-to-a-long-random-string` |
+| `DB_URL` | `data` | PostgreSQL connection string for Neon (or local Postgres). Used for persistent storage of game history. | `postgresql://user:pass@host:5432/dbname?sslmode=require` |
+
+After updating the environment variables, you can run the web application locally with:
 
 ```bash
-# How to run application for HTTP/1.1, HTTP/2 and HTTP/3
-hypercorn --config conf/hypercornAll.toml   spletni_umesnik:asgi_app
-
-# How to run application for HTTP/2
-hypercorn --config conf/hypercornBase.toml   spletni_umesnik:asgi_app
-
-# How to run application for HTTP/1.1
-hypercorn --config conf/hypercornDep.toml   spletni_umesnik:app
-
-# How to run application for command line
-python tekstovni_umesnik.py
+docker compose up --build
 ```
 
----
+## 4.3 Verify Services
+You can verify the readiness and health of microservices via the `/health` and `/ready` endpoints.
+```bash
+# Health and ready endpoins for Frontend, Session & API Gateway Service
+curl -s http://localhost:8080/health
+curl -s http://localhost:8080/ready
+# Health and ready endpoins for Game Engine Service
+curl -s http://localhost:8081/health
+curl -s http://localhost:8081/ready
+# Health and ready endpoins for Authentication Service
+curl -s http://localhost:8082/health
+curl -s http://localhost:8082/ready
+# Health and ready endpoins for Data Service
+curl -s http://localhost:8083/health
+curl -s http://localhost:8083/ready
+```
+
+## 5. Branching Strategy
+Due to small project there is only one `master` branch.
