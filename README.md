@@ -22,7 +22,7 @@ The player plays against the computer. The system supports three user roles:
 | Data Service | `services/data` | `http://localhost:8083` | `http://data:8083` | Persistent storage + queries (PostgreSQL/Neon) |
 
 ### 1.2 External dependencies
-- **Redis** — short-term game state storage (**TTL = 15 minutes**)
+- **Redis** — short-term game state storage
 - **PostgreSQL (Neon)** — persistent storage of game history
 - **Google Auth Platform** — OAuth2/OIDC provider for subscribers
 
@@ -35,8 +35,8 @@ The player plays against the computer. The system supports three user roles:
 
 All microservices expose:
 
-- `GET/HEAD /health` — **liveness** (service process is running)
-- `GET/HEAD /ready` — **readiness** (service is ready to serve traffic; checks required environment variables and dependencies, e.g., Redis availability)
+- `GET /health` — **liveness** (service process is running)
+- `GET /ready` — **readiness** (service is ready to serve traffic; checks required environment variables and dependencies, e.g., Redis availability)
 
 ---
 
@@ -55,6 +55,8 @@ All microservices expose:
 
 ### 4.1 Prerequisites
 - Docker + Docker Compose
+- Google Auth Platform account
+- Any PostgreSQL database provider (e.g., Neon)
 
 ### 4.2 Start
 

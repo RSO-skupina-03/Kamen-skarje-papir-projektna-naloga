@@ -53,21 +53,21 @@ Sistem je sestavljen iz naslednjih komponent:
 - **Glavne poti:**
   - `GET /` – prikaz strani za prijavo uporabnika
   - `PUT /frontend/login` – prijava uporabnika (*Gost* ali *Uporabnik*) in nastavitev piškotkov
-  - `GET /auth/finalize` – klic mikrostoritve `Authentication Service` za dokončanje avtentikacije uporabnika in nastavitev piškotkov
+  - `GET /auth/finalize` – klic mikrostoritve *Authentication Service* za dokončanje avtentikacije naročnika preko *Google Auth Platform* in nastavitev piškotkov
   - `GET /igra` – prikaz začetnega menija za igranje iger *Kamen–Škarje–Papir* in *Kamen–Škarje–Papir–Ogenj–Voda*
   
-  - `POST /ksp` — pridobi podatke o uporabnikovi izbiri (kamen, škarje ali papir) in jih posreduje mikrostoritvi `Game Engine`
-  - `GET /ksp` — iz piškotkov prebere podatke o uporabniku, pridobi stanje igre (klic mikrostoritve `Game Engine`) in prikaže igro
+  - `POST /ksp` — pridobi podatke o uporabnikovi izbiri (kamen, škarje ali papir) in jih posreduje mikrostoritvi *Game Engine*
+  - `GET /ksp` — iz piškotkov prebere podatke o uporabniku, pridobi stanje igre (klic mikrostoritve *Game Engine*) in prikaže igro
   - `GET /nova_igra_ksp` — inicializacija nove igre *Kamen–Škarje–Papir*
-  - `GET /zgodovina_ksp` — pridobi podatke o zgodovini iger *Kamen–Škarje–Papir* (klic mikrostoritve `Data Service`) in prikaže zgodovino
-  - `DELETE /brisi_ksp` — izbriše zgodovino iger *Kamen–Škarje–Papir* (klic mikrostoritve `Data Service`) 
+  - `GET /zgodovina_ksp` — pridobi podatke o zgodovini iger *Kamen–Škarje–Papir* (klic mikrostoritve *Data Service*) in prikaže zgodovino
+  - `DELETE /brisi_ksp` — izbriše zgodovino iger *Kamen–Škarje–Papir* (klic mikrostoritve *Data Service*) 
   
-  - `POST /kspov` — pridobi podatke o uporabnikovi izbiri (kamen, škarje, papir, ogenj ali voda) in jih posreduje mikrostoritvi `Game Engine`
-  - `GET /kspov` — iz piškotkov prebere podatke o uporabniku, pridobi stanje igre (klic mikrostoritve `Game Engine`) in prikaže igro
+  - `POST /kspov` — pridobi podatke o uporabnikovi izbiri (kamen, škarje, papir, ogenj ali voda) in jih posreduje mikrostoritvi *Game Engine*
+  - `GET /kspov` — iz piškotkov prebere podatke o uporabniku, pridobi stanje igre (klic mikrostoritve *Game Engine*) in prikaže igro
   - `GET /nova_igra_kspov` — inicializacija nove igre *Kamen–Škarje–Papir–Ogenj–Voda*
-  - `GET /zgodovina_kspov` — pridobi podatke o zgodovini iger *Kamen–Škarje–Papir–Ogenj–Voda* (klic mikrostoritve `Data Service`) in prikaže zgodovino
-  - `DELETE /brisi_kspov` — izbriše zgodovino iger *Kamen–Škarje–Papir–Ogenj–Voda* (klic mikrostoritve `Data Service`)
-- **Odvisnosti:** `Game Engine Service`, `Authentication Service`, `Data Service`
+  - `GET /zgodovina_kspov` — pridobi podatke o zgodovini iger *Kamen–Škarje–Papir–Ogenj–Voda* (klic mikrostoritve *Data Service*) in prikaže zgodovino
+  - `DELETE /brisi_kspov` — izbriše zgodovino iger *Kamen–Škarje–Papir–Ogenj–Voda* (klic mikrostoritve *Data Service*)
+- **Odvisnosti:** *Game Engine Service*, *Authentication Service*, *Data Service*
 
 #### 4.1.2 Game Engine Service
 - **Ime mikrostoritve v repozitoriju:** `game_engine`
@@ -82,7 +82,7 @@ Sistem je sestavljen iz naslednjih komponent:
   - `POST /game/kspov/nova` – inicializira novo igro *Kamen–Škarje–Papir–Ogenj–Voda*
   - `GET /game/kspov/state` – vrne trenutno stanje igre *Kamen–Škarje–Papir–Ogenj–Voda*
   - `POST /game/kspov/poteza` – izvede potezo in izračuna novo stanje igre *Kamen–Škarje–Papir–Ogenj–Voda*
-- **Odvisnosti:** `Redis`, `Data Service`
+- **Odvisnosti:** *Redis*, *Data Service*
 
 #### 4.1.4 Authentication Service
 - **Ime mikrostoritve v repozitoriju:** `auth`
@@ -91,9 +91,9 @@ Sistem je sestavljen iz naslednjih komponent:
 - **Vloga:** integracija OAuth2/OIDC (Google) in validacija ID žetonov
 - **Glavne poti:**
   - `GET /auth/google/login` – preusmeritev uporabnika na *Google Auth Platform*
-  - `GET /auth/google/callback` – obdelava povratnega klica (*callback*) iz *Google Auth Platform*, generiranje enkratne vstopnice ter posredovanje podatkov mikrostoritvi `Frontend, Session, API Gateway`
+  - `GET /auth/google/callback` – obdelava povratnega klica (*callback*) iz *Google Auth Platform*, generiranje enkratne vstopnice ter posredovanje podatkov mikrostoritvi *Frontend, Session, API Gateway*
   - `GET /auth/redeem` – vrne podatke o prijavljenem uporabniku na podlagi vstopnice
-- **Odvisnosti:** `Google Auth Platform`
+- **Odvisnosti:** *Google Auth Platform*
 
 #### 4.1.3 Data Service
 - **Ime mikrostoritve v repozitoriju:** `data`
@@ -110,12 +110,13 @@ Sistem je sestavljen iz naslednjih komponent:
   - `GET /data/kspov/get/id` – pridobi ustrezen identifikator igre
   - `GET /data/kspov/history` – vrne zgodovino iger uporabnika
   - `POST /data/kspov/delete` – izbriše zgodovino iger uporabnika
-- **Odvisnosti:** `Neon Database (PostgreSQL)`
+- **Odvisnosti:** *Neon Database (PostgreSQL)*`
 
+<div style="page-break-after: always;"></div>
 
 ### 3.2 Shema arhitekture
 <p align="center">
-  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="50%">
+  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="80%">
 </p>
 
 
