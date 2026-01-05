@@ -1,4 +1,4 @@
-import os, json, bottle, model
+import os, json, bottle, model, swagger
 from bottle import request, response
 from dotenv import load_dotenv
 from gateway import (
@@ -153,6 +153,18 @@ def gateway_health():
         "backends": backend_health
     }, indent=2)
 
+@bottle.get("/docs.json")
+def docs_json():
+    response.content_type = "application/json; charset=utf-8"
+    return json.dumps(swagger.OPENAPI_SPEC, ensure_ascii=False, indent=2)
+
+
+@bottle.get("/docs")
+def docs_ui():
+    # Swagger UI via CDN that loads /docs.json from this service
+    response.content_type = "text/html; charset=utf-8"
+    return bottle.template('views/swagger.tpl')
+
 @bottle.route('/', method=['GET','HEAD'])
 @log_request
 @rate_limit(max_requests=60, window_seconds=60)
@@ -223,7 +235,7 @@ def finalize():
     bottle.response.set_header("Location", "/igra")
     return ""
 
-@bottle.route(' ', method=['GET','HEAD'])
+@bottle.route('/igra', method=['GET','HEAD'])
 def igra():
     if request.method == 'HEAD':
         response.status = 200

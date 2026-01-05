@@ -1,7 +1,4 @@
-import os
-import json
-import bottle
-import model
+import os, json, bottle, model, swagger
 from bottle import request, response, HTTPError
 from dotenv import load_dotenv
 
@@ -58,6 +55,18 @@ def readiness_check():
     
     response.content_type = 'application/json'
     return json.dumps(checks, indent=2)
+
+@bottle.get("/docs.json")
+def docs_json():
+    response.content_type = "application/json; charset=utf-8"
+    return json.dumps(swagger.OPENAPI_SPEC, ensure_ascii=False, indent=2)
+
+
+@bottle.get("/docs")
+def docs_ui():
+    # Swagger UI via CDN that loads /docs.json from this service
+    response.content_type = "text/html; charset=utf-8"
+    return bottle.template('views/swagger.tpl')
 
 @bottle.post("/data/ksp/insert")
 def ksp_insert():

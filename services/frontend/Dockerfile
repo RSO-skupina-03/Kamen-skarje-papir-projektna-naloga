@@ -20,6 +20,7 @@ COPY static/ static/
 COPY views/ views/
 COPY model.py model.py
 COPY gateway.py gateway.py
+COPY swagger.py swagger.py
 COPY spletni_umesnik.py spletni_umesnik.py
 
 EXPOSE 8080

@@ -3,6 +3,7 @@ from urllib.parse import urlencode
 import requests
 import bottle
 import json
+import swagger
 from bottle import request, response, HTTPError
 from dotenv import load_dotenv
 from google.oauth2 import id_token as google_id_token
@@ -115,6 +116,18 @@ def build_authorization_url(secrets: dict, redirect_uri: str) -> tuple[str, str]
         "prompt": "consent",
     }
     return f"{secrets['auth_uri']}?{urlencode(params)}", state
+
+@bottle.get("/docs.json")
+def docs_json():
+    response.content_type = "application/json; charset=utf-8"
+    return json.dumps(swagger.OPENAPI_SPEC, ensure_ascii=False, indent=2)
+
+
+@bottle.get("/docs")
+def docs_ui():
+    # Swagger UI via CDN that loads /docs.json from this service
+    response.content_type = "text/html; charset=utf-8"
+    return bottle.template('views/swagger.tpl')
 
 @bottle.get("/auth/google/login")
 def google_login():

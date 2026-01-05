@@ -1,4 +1,4 @@
-import os, json, bottle, threading, model, redis
+import os, json, bottle, threading, model, redis, swagger
 from bottle import request, response
 from dotenv import load_dotenv
 
@@ -84,6 +84,18 @@ def readiness_check():
 
     response.content_type = 'application/json'
     return json.dumps(checks, indent=2)
+
+@bottle.get("/docs.json")
+def docs_json():
+    response.content_type = "application/json; charset=utf-8"
+    return json.dumps(swagger.OPENAPI_SPEC, ensure_ascii=False, indent=2)
+
+
+@bottle.get("/docs")
+def docs_ui():
+    # Swagger UI via CDN that loads /docs.json from this service
+    response.content_type = "text/html; charset=utf-8"
+    return bottle.template('views/swagger.tpl')
 
 @bottle.post("/game/init_user")
 def init_user():
