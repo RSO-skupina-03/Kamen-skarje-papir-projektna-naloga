@@ -32,7 +32,7 @@ Gost in uporabnik imata dostop do osnovnih funkcionalnosti spletne aplikacije. N
 ## 4. Arhitektura sistema
 Sistem je sestavljen iz štirih mikrostoritev. Vsaka mikrostoritev ima poti `/health` in `/ready`, ki podajata informacijo o stanju storitve.
 
-Pot `/health` je namenjena preverjanju, ali mikrostoritev deluje (liveness). Pot `/ready` pa prikazuje, ali je mikrostoritev pripravljena na obdelavo zahtevkov (readiness): preveri prisotnost zahtevanih okoljskih spremenljivk ter razpoložljivost odvisnosti, na primer Redisa.
+Pot `/health` je namenjena preverjanju, ali mikrostoritev deluje (liveness). Pot `/ready` prikazuje, ali je mikrostoritev pripravljena na obdelavo zahtevkov (readiness): preveri prisotnost zahtevanih okoljskih spremenljivk ter razpoložljivost odvisnosti, na primer Redisa. Vse URL-je lahko pregledate in preizkusite prek Swagger UI na poti `/docs`.
 
 ### 4.1 Pregled mikrostoritev
 Sistem je sestavljen iz naslednjih komponent:

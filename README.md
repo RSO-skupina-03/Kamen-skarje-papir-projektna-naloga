@@ -76,20 +76,21 @@ docker compose up --build
 ```
 
 ## 4.3 Verify Services
-You can verify the readiness and health of microservices via the `/health` and `/ready` endpoints.
-```bash
-# Health and ready endpoins for Frontend, Session & API Gateway Service
-curl -s http://localhost:8080/health
-curl -s http://localhost:8080/ready
-# Health and ready endpoins for Game Engine Service
-curl -s http://localhost:8081/health
-curl -s http://localhost:8081/ready
-# Health and ready endpoins for Authentication Service
-curl -s http://localhost:8082/health
-curl -s http://localhost:8082/ready
-# Health and ready endpoins for Data Service
-curl -s http://localhost:8083/health
-curl -s http://localhost:8083/ready
+
+You can verify the health, readiness, and available endpoints of each microservice via Swagger UI:
+
+```text
+# Swagger UI for Frontend, Session & API Gateway Service
+http://localhost:8080/docs
+
+# Swagger UI for Game Engine Service
+http://localhost:8081/docs
+
+# Swagger UI for Authentication Service
+http://localhost:8082/docs
+
+# Swagger UI for Data Service
+http://localhost:8083/docs
 ```
 
 ## 5. Branching Strategy
