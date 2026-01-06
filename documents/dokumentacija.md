@@ -29,6 +29,54 @@ Gost in uporabnik imata dostop do osnovnih funkcionalnosti spletne aplikacije. N
 
 ## 3. Postavitev v oblaku
 
+Aplikacija je nameščena v Microsoft Azure z uporabo Azure Kubernetes Service (AKS). Vse mikrostoritve so containerizirane z Docker in orkestrirane prek Kubernetes.
+
+### 3.1 Azure infrastruktura
+
+Sistem uporablja naslednje Azure vire:
+- **AKS Cluster:** `ksp-aks-cluster-microservices` - Kubernetes orkestracija
+- **PostgreSQL Flexible Server:** `kspdb-microservices` - trajno shranjevanje podatkov
+- **Key Vault:** `ksp-kv-microservices` - shranjevanje skrivnosti (session secrets, OAuth credentials, database URL)
+- **Redis:** nameščen v Kubernetes - shranjevanje aktivnih iger in API Gateway metrik
+
+### 3.2 Posebnosti namestitve
+
+#### Redis integracija
+- **Game Engine Service** uporablja Redis za shranjevanje aktivnih iger (TTL 15 minut)
+- **Frontend Service (API Gateway)** uporablja Redis za rate limiting, metrike in circuit breaker stanje
+- Redis je nameščen kot Kubernetes deployment z `emptyDir` volume
+
+#### API Gateway funkcionalnosti
+Frontend Service deluje kot API Gateway z:
+- **Rate Limiting:** Redis-based sliding window algoritem, konfigurabilno po route
+- **Request Logging:** Vsi zahtevki se logirajo v Redis
+- **Metrics:** Dostopno prek `GET /metrics`
+- **Circuit Breaker:** Zaščita pred cascading failures
+- **Health Checks:** `GET /gateway/health` - preveri zdravje gateway in backend storitev
+
+#### Secrets Management
+Skrivnosti se upravljajo prek Azure Key Vault in Secrets Store CSI Driver:
+- Skrivnosti se montirajo kot volume v pod-e
+- Avtomatska sinhronizacija z Kubernetes Secrets
+- Podpira rotacijo skrivnosti brez restartov
+
+#### Skalabilnost
+- **Frontend:** 2 repliki (API Gateway + UI)
+- **Game Engine:** 2 repliki
+- **Data:** 2 repliki
+- **Auth:** 1 repliki
+- **Redis:** 1 replika
+
+### 3.3 DNS in domena
+
+Aplikacija uporablja domeno `kamen-skarje-papir.click`:
+- **Frontend:** `http://kamen-skarje-papir.click` (port 80)
+- **Auth:** `http://kamen-skarje-papir.click:8082` (port 8082)
+
+DNS A zapis mora kazati na Ingress Controller LoadBalancer IP (ali frontend LoadBalancer IP, če se ne uporablja Ingress).
+
+Google OAuth redirect URI: `http://kamen-skarje-papir.click:8082/auth/google/callback`
+
 ## 4. Arhitektura sistema
 Sistem je sestavljen iz štirih mikrostoritev. Vsaka mikrostoritev ima poti `/health` in `/ready`, ki podajata informacijo o stanju storitve.
 
