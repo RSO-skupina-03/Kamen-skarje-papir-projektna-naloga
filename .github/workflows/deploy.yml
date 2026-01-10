@@ -1,0 +1,86 @@
+name: Deploy to AKS
+
+on:
+  workflow_run:
+    workflows: ["CI/CD Pipeline"]
+    types:
+      - completed
+  workflow_dispatch:
+
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    if: github.event.workflow_run.conclusion == 'success' || github.event_name == 'workflow_dispatch'
+    permissions:
+      contents: read
+      id-token: write
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Get AKS credentials
+        run: |
+          az aks get-credentials \
+            --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} \
+            --name ${{ secrets.AKS_CLUSTER_NAME }} \
+            --overwrite-existing
+
+      - name: Apply SecretProviderClass
+        run: |
+          set -euo pipefail
+          
+          # Get AKS identity and tenant ID dynamically
+          AKS_IDENTITY_CLIENT_ID=$(az aks show \
+            --resource-group ${{ secrets.AKS_RESOURCE_GROUP }} \
+            --name ${{ secrets.AKS_CLUSTER_NAME }} \
+            --query identityProfile.kubeletidentity.clientId -o tsv)
+          TENANT_ID="${{ secrets.AZURE_TENANT_ID }}"
+          
+          # Replace placeholders in SecretProviderClass
+          if [ -f k8s/secret-provider-class-microservices.yaml ]; then
+            tmp_spc=$(mktemp)
+            sed \
+              -e "s|<USER_ASSIGNED_IDENTITY_ID>|${AKS_IDENTITY_CLIENT_ID}|g" \
+              -e "s|<AZURE_TENANT_ID>|${TENANT_ID}|g" \
+              k8s/secret-provider-class-microservices.yaml > "${tmp_spc}"
+            kubectl apply -f "${tmp_spc}"
+            rm -f "${tmp_spc}"
+          fi
+
+      - name: Apply Kubernetes manifests
+        run: |
+          kubectl apply -f k8s/redis/deployment.yaml
+          kubectl apply -f k8s/redis/service.yaml
+          kubectl apply -f k8s/auth/deployment.yaml
+          kubectl apply -f k8s/auth/service.yaml
+          kubectl apply -f k8s/game_engine/deployment.yaml
+          kubectl apply -f k8s/game_engine/service.yaml
+          kubectl apply -f k8s/data/deployment.yaml
+          kubectl apply -f k8s/data/service.yaml
+          kubectl apply -f k8s/frontend/deployment.yaml
+          kubectl apply -f k8s/frontend/service.yaml
+
+      - name: Restart deployments to pull new images
+        run: |
+          kubectl rollout restart deployment/ksp-redis
+          kubectl rollout restart deployment/ksp-auth
+          kubectl rollout restart deployment/ksp-game-engine
+          kubectl rollout restart deployment/ksp-data
+          kubectl rollout restart deployment/ksp-frontend
+
+      - name: Wait for deployments
+        run: |
+          kubectl rollout status deployment/ksp-redis --timeout=300s
+          kubectl rollout status deployment/ksp-auth --timeout=300s
+          kubectl rollout status deployment/ksp-game-engine --timeout=300s
+          kubectl rollout status deployment/ksp-data --timeout=300s
+          kubectl rollout status deployment/ksp-frontend --timeout=300s
