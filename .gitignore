@@ -3,7 +3,6 @@
 
 datoteke/
 azure/
-k8s/
 .env
 docker-compose.yaml
 # Byte-compiled / optimized / DLL files

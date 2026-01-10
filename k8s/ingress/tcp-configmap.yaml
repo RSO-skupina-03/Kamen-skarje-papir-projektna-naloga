@@ -1,0 +1,9 @@
+# TCP Services ConfigMap for NGINX Ingress
+# This allows exposing the auth service on port 8082 through the Ingress Controller
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: tcp-services
+  namespace: ingress-nginx
+data:
+  "8082": "default/ksp-auth-service:8082"

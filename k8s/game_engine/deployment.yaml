@@ -1,0 +1,71 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ksp-game-engine
+  labels:
+    app: ksp-game-engine
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ksp-game-engine
+  template:
+    metadata:
+      labels:
+        app: ksp-game-engine
+    spec:
+      containers:
+      - name: ksp-game-engine
+        image: filipmerkan/ksp-game-engine:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8081
+          name: http
+        env:
+        - name: DB_URL
+          valueFrom:
+            secretKeyRef:
+              name: ksp-secrets
+              key: db-url
+        - name: DATA_URL
+          value: "http://ksp-data-service:8083"
+        - name: REDIS_HOST
+          value: "ksp-redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_DB
+          value: "0"
+        volumeMounts:
+        - name: secrets-store
+          mountPath: /mnt/secrets-store
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8081
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8081
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: ksp-secrets

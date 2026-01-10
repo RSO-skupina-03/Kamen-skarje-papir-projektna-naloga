@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ksp-frontend
+  labels:
+    app: ksp-frontend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ksp-frontend
+  template:
+    metadata:
+      labels:
+        app: ksp-frontend
+    spec:
+      containers:
+      - name: ksp-frontend
+        image: filipmerkan/ksp-frontend:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+          name: http
+        env:
+        - name: SESSION_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ksp-secrets
+              key: session-cookie-secret
+        - name: GAME_ENGINE_URL
+          value: "http://ksp-game-engine-service:8081"
+        - name: FRONTEND_URL
+          value: "http://kamen-skarje-papir.click"  # Domain for frontend service (port 80)
+        - name: AUTH_URL
+          value: "http://kamen-skarje-papir.click:8082"  # Domain for auth service (port 8082)
+        - name: AUTH_LOCAL
+          value: "http://ksp-auth-service:8082"  # Internal service URL for auth (used for service-to-service calls)
+        - name: DATA_URL
+          value: "http://ksp-data-service:8083"  # Internal service URL for data service
+        - name: REDIS_HOST
+          value: "ksp-redis-service"
+        - name: REDIS_PORT
+          value: "6379"
+        - name: REDIS_DB
+          value: "0"
+        volumeMounts:
+        - name: secrets-store
+          mountPath: /mnt/secrets-store
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8080
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: ksp-secrets

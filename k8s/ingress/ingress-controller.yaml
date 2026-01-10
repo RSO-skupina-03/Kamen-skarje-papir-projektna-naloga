@@ -1,0 +1,10 @@
+# NGINX Ingress Controller Installation
+# This will be installed via Helm chart
+# Run: helm install ingress-nginx ingress-nginx/ingress-nginx --namespace ingress-nginx --create-namespace
+
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ingress-nginx
+  labels:
+    name: ingress-nginx

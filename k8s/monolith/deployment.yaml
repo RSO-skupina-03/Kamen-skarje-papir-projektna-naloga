@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ksp-app
+  labels:
+    app: ksp-app
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ksp-app
+  template:
+    metadata:
+      labels:
+        app: ksp-app
+    spec:
+      containers:
+      - name: ksp-app
+        image: filipmerkan/ksp-app:latest
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8000
+          name: http
+        env:
+        - name: SESSION_COOKIE_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: ksp-secrets
+              key: session-cookie-secret
+        # DB_URL is optional for monolith (uses file-based storage, not PostgreSQL)
+        # Uncomment below if you want to set it (e.g., for future use)
+        # - name: DB_URL
+        #   valueFrom:
+        #     secretKeyRef:
+        #       name: ksp-secrets
+        #       key: db-url
+        volumeMounts:
+        - name: data-storage
+          mountPath: /app/datoteke
+        - name: secrets-store
+          mountPath: /mnt/secrets-store
+          readOnly: true
+        resources:
+          requests:
+            memory: "256Mi"
+            cpu: "250m"
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8000
+          initialDelaySeconds: 60
+          periodSeconds: 30
+          timeoutSeconds: 5
+          failureThreshold: 3
+        readinessProbe:
+          httpGet:
+            path: /ready
+            port: 8000
+          initialDelaySeconds: 15
+          periodSeconds: 10
+          timeoutSeconds: 3
+          failureThreshold: 3
+      volumes:
+      - name: data-storage
+        emptyDir: {}
+      - name: secrets-store
+        csi:
+          driver: secrets-store.csi.k8s.io
+          readOnly: true
+          volumeAttributes:
+            secretProviderClass: ksp-secrets
+
