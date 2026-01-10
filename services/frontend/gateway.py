@@ -7,6 +7,8 @@ from bottle import request, response, HTTPError
 import requests
 import redis
 from threading import Lock
+from dotenv import load_dotenv
+load_dotenv()
 
 # Configure logging
 logging.basicConfig(level=logging.INFO)
