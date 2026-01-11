@@ -1,0 +1,68 @@
+services:
+
+  frontend:
+    build:
+      context: ./services/frontend
+    container_name: frontend
+    ports:
+      - "8080:8080"
+    environment:
+      SESSION_COOKIE_SECRET: ""
+      GAME_ENGINE_URL: "http://game_engine:8081"  #Ta se klice od znotraj
+      FRONTEND_URL: "http://localhost:8080"
+      AUTH_URL: "http://localhost:8082"
+      AUTH_LOCAL: "http://auth:8082"
+      DATA_URL: "http://data:8083"
+      REDIS_HOST: "redis" 
+      REDIS_PORT: "6379"
+      REDIS_DB: "0"
+    depends_on:
+      - redis
+
+  game_engine:
+    build:
+      context: ./services/game_engine
+    container_name: game_engine
+    ports:
+      - "8081:8081"
+    environment:
+      DATA_URL: "http://data:8083"
+      REDIS_HOST: "redis" 
+      REDIS_PORT: "6379"
+      REDIS_DB: "0"
+    depends_on:
+      - redis
+  
+  auth:
+    build:
+      context: ./services/auth
+    container_name: auth
+    ports:
+      - "8082:8082"
+    environment:
+      FRONTEND_URL: "http://localhost:8080"
+      GAME_ENGINE_URL: "http://game_engine:8081" #Ta se klice od znotraj
+      AUTH_URL: "http://localhost:8082"
+      GOOGLE_CLIENT_ID: ""
+      GOOGLE_CLIENT_SECRET: ""
+      SESSION_COOKIE_SECRET: ""
+
+  data:
+    build:
+      context: ./services/data
+    container_name: data
+    ports:
+      - "8083:8083"
+    environment:
+      DB_URL: ""
+
+  redis:
+    image: redis:7-alpine
+    container_name: redis
+    ports:
+      - "8084:6379"      # host:container (so redis-cli can use 127.0.0.1:8084)
+    volumes:
+      - redis_data:/data
+
+volumes:
+  redis_data:
