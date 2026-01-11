@@ -87,6 +87,8 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen–Škarje�
 **Funkcionalnosti:** usmerjanje zahtev na mikrostoritve, prikaz uporabniškega vmesnika (HTML/CSS/JS), upravljanje sej (piškotki), omejevanje hitrosti zahtevkov (rate limiting), porazdeljevanje bremena med mikrosotiravmi (load balancing).
 
 **Glavne poti:**
+  - `GET /docs/...` — glej **dokumentacija.md** ali **dokumentacija.pdf**
+  
   - `GET /` – prikaz strani za prijavo uporabnika
   - `PUT /frontend/login` – prijava uporabnika (*Gost* ali *Uporabnik*) in nastavitev piškotkov
   - `GET /auth/finalize` – klic mikrostoritve *Authentication Service* za dokončanje avtentikacije
@@ -163,8 +165,6 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen–Škarje�
 7. Mikrostoritev **Data Service** pridobi podatke o zgodovini iger KŠPOV.
 8. Naročnik zahteva brisanje zgodovine.
 9. Prikaže se prazna zgodovina iger.
-
-<div style="page-break-after: always;"></div>
 
 ## Seznam opravljenih/vključenih osnovnih in dodatnih projektnih zahtev
 

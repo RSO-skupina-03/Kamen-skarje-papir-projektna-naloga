@@ -291,16 +291,16 @@ You can verify the health, readiness, and available endpoints of each microservi
 
 ```text
 # Swagger UI for Frontend, Session & API Gateway Service
-http://localhost:8080/docs
+http://localhost:8080/docs/frontend
 
 # Swagger UI for Game Engine Service
-http://localhost:8081/docs
+http://localhost:8080/docs/game-engine
 
 # Swagger UI for Authentication Service
-http://localhost:8082/docs
+http://localhost:8080/docs/auth
 
 # Swagger UI for Data Service
-http://localhost:8083/docs
+http://localhost:8080/docs/data
 ```
 
 ### 6.2 Cloud Deployment (Azure AKS)
@@ -309,24 +309,24 @@ For cloud deployment, replace `localhost` with your domain name or Ingress Contr
 
 ```text
 # Swagger UI for Frontend, Session & API Gateway Service
-http://your-domain.com/docs
+http://your-domain.com/docs/frontend
 # or
-http://<ingress-ip>/docs
+http://<ingress-ip>/docs/frontend
 
 # Swagger UI for Game Engine Service
-http://your-domain.com:8081/docs
+http://your-domain.com/docs/game-engine
 # or
-http://<ingress-ip>:8081/docs
+http://<ingress-ip>/docs/game-engine
 
 # Swagger UI for Authentication Service
-http://your-domain.com:8082/docs
+http://your-domain.com/docs/auth
 # or
-http://<ingress-ip>:8082/docs
+http://<ingress-ip>/docs/auth
 
 # Swagger UI for Data Service
-http://your-domain.com:8083/docs
+http://your-domain.com/docs/data
 # or
-http://<ingress-ip>:8083/docs
+http://<ingress-ip>/docs/data
 ```
 
 **Note:** For cloud deployment, you may need to configure port forwarding or use Ingress rules to access internal services. The frontend service is accessible via Ingress Controller on port 80, while other services may require direct access or port forwarding.

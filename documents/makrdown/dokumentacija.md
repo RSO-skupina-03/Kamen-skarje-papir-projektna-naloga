@@ -80,7 +80,7 @@ Google OAuth redirect URI: `http://kamen-skarje-papir.click:8082/auth/google/cal
 ## 4. Arhitektura sistema
 Sistem je sestavljen iz štirih mikrostoritev. Vsaka mikrostoritev ima poti `/health` in `/ready`, ki podajata informacijo o stanju storitve.
 
-Pot `/health` je namenjena preverjanju, ali mikrostoritev deluje (liveness). Pot `/ready` prikazuje, ali je mikrostoritev pripravljena na obdelavo zahtevkov (readiness): preveri prisotnost zahtevanih okoljskih spremenljivk ter razpoložljivost odvisnosti, na primer Redisa. Vse URL-je lahko pregledate in preizkusite prek Swagger UI na poti `/docs`.
+Pot `/health` je namenjena preverjanju, ali mikrostoritev deluje (liveness). Pot `/ready` prikazuje, ali je mikrostoritev pripravljena na obdelavo zahtevkov (readiness): preveri prisotnost zahtevanih okoljskih spremenljivk ter razpoložljivost odvisnosti, na primer Redisa.
 
 ### 4.1 Pregled mikrostoritev
 Sistem je sestavljen iz naslednjih komponent:
@@ -102,6 +102,10 @@ Sistem je sestavljen iz naslednjih komponent:
   - `GET /` – prikaz strani za prijavo uporabnika
   - `PUT /frontend/login` – prijava uporabnika (*Gost* ali *Uporabnik*) in nastavitev piškotkov
   - `GET /auth/finalize` – klic mikrostoritve *Authentication Service* za dokončanje avtentikacije naročnika preko *Google Auth Platform* in nastavitev piškotkov
+  - `GET /docs/frontend` — testiranje in dokumentacija glavnih poti Frontend, Session, API Gateway mikrostoritve
+  - `GET /docs/game-engine` — testiranje in dokumentacija glavnih poti Game Engine mikrostoritve
+  - `GET /docs/data` — testiranje in dokumentacija glavnih poti Data mikrostoritve
+  - `GET /docs/auth` — testiranje in dokumentacija glavnih poti Authentication mikrostoritve
   - `GET /igra` – prikaz začetnega menija za igranje iger *Kamen–Škarje–Papir* in *Kamen–Škarje–Papir–Ogenj–Voda*
   
   - `POST /ksp` — pridobi podatke o uporabnikovi izbiri (kamen, škarje ali papir) in jih posreduje mikrostoritvi *Game Engine*

@@ -281,6 +281,42 @@ OPENAPI_SPEC = {
                 "responses": {"200": {"description": "OK"}},
             },
         },
+        "/docs/frontend": {
+            "get": {
+                "summary": "Swagger UI — Frontend API",
+                "description": "Serves Swagger UI for the Frontend & API Gateway service. UI loads this service's OpenAPI JSON (typically /docs.json).",
+                "responses": {
+                    "200": {"description": "HTML Swagger UI page"}
+                },
+            }
+        },
+        "/docs/game-engine": {
+            "get": {
+                "summary": "Swagger UI — Game Engine API",
+                "description": "Serves Swagger UI for the Game Engine service via the Frontend. The UI should load a proxied OpenAPI JSON (e.g., /docs/game-engine.json).",
+                "responses": {
+                    "200": {"description": "HTML Swagger UI page"}
+                },
+            }
+        },
+        "/docs/data": {
+            "get": {
+                "summary": "Swagger UI — Data Service API",
+                "description": "Serves Swagger UI for the Data service via the Frontend. The UI should load a proxied OpenAPI JSON (e.g., /docs/data.json).",
+                "responses": {
+                    "200": {"description": "HTML Swagger UI page"}
+                },
+            }
+        },
+        "/docs/auth": {
+            "get": {
+                "summary": "Swagger UI — Authentication Service API",
+                "description": "Serves Swagger UI for the Auth service via the Frontend. The UI should load a proxied OpenAPI JSON (e.g., /docs/auth.json).",
+                "responses": {
+                    "200": {"description": "HTML Swagger UI page"}
+                },
+            }
+        },
     },
 }
 
@@ -291,7 +327,8 @@ OPENAPI_SPEC["tags"] = [
     {"name": "Frontend", "description": "UI pages and runtime config"},
     {"name": "Auth", "description": "Authentication finalize flow (ticket redemption)"},
     {"name": "KSP", "description": "Rock–Paper–Scissors game endpoints"},
-    {"name": "KSPOV", "description": "Rock–Paper–Scissors–Fire–Water game endpoints"}
+    {"name": "KSPOV", "description": "Rock–Paper–Scissors–Fire–Water game endpoints"},
+    {"name": "Docs", "description": "Swagger UI pages (documentation portals)"}
 ]
 
 # ---- Assign tags to operations (removes the 'default' group) ----
@@ -333,3 +370,8 @@ OPENAPI_SPEC["paths"]["/zgodovina_kspov"]["get"]["tags"] = ["KSPOV"]
 OPENAPI_SPEC["paths"]["/zgodovina_kspov"]["head"]["tags"] = ["KSPOV"]
 OPENAPI_SPEC["paths"]["/brisi_kspov"]["delete"]["tags"] = ["KSPOV"]
 OPENAPI_SPEC["paths"]["/brisi_kspov"]["head"]["tags"] = ["KSPOV"]
+
+OPENAPI_SPEC["paths"]["/docs/frontend"]["get"]["tags"] = ["Docs"]
+OPENAPI_SPEC["paths"]["/docs/game-engine"]["get"]["tags"] = ["Docs"]
+OPENAPI_SPEC["paths"]["/docs/data"]["get"]["tags"] = ["Docs"]
+OPENAPI_SPEC["paths"]["/docs/auth"]["get"]["tags"] = ["Docs"]
