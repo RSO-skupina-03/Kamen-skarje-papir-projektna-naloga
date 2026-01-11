@@ -60,6 +60,8 @@ jobs:
         run: |
           kubectl apply -f k8s/redis/deployment.yaml
           kubectl apply -f k8s/redis/service.yaml
+          kubectl apply -f k8s/redis-game-engine/deployment.yaml
+          kubectl apply -f k8s/redis-game-engine/service.yaml
           kubectl apply -f k8s/auth/deployment.yaml
           kubectl apply -f k8s/auth/service.yaml
           kubectl apply -f k8s/game_engine/deployment.yaml
@@ -71,7 +73,8 @@ jobs:
 
       - name: Restart deployments to pull new images
         run: |
-          kubectl rollout restart deployment/ksp-redis
+          kubectl rollout restart deployment/ksp-redis-frontend
+          kubectl rollout restart deployment/ksp-redis-game-engine
           kubectl rollout restart deployment/ksp-auth
           kubectl rollout restart deployment/ksp-game-engine
           kubectl rollout restart deployment/ksp-data
@@ -79,7 +82,8 @@ jobs:
 
       - name: Wait for deployments
         run: |
-          kubectl rollout status deployment/ksp-redis --timeout=300s
+          kubectl rollout status deployment/ksp-redis-frontend --timeout=300s
+          kubectl rollout status deployment/ksp-redis-game-engine --timeout=300s
           kubectl rollout status deployment/ksp-auth --timeout=300s
           kubectl rollout status deployment/ksp-game-engine --timeout=300s
           kubectl rollout status deployment/ksp-data --timeout=300s

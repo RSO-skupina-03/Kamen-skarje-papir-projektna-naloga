@@ -38,7 +38,7 @@ spec:
         - name: DATA_URL
           value: "http://ksp-data-service:8083"  # Internal service URL for data service
         - name: REDIS_HOST
-          value: "ksp-redis-service"
+          value: "ksp-redis-frontend-service"
         - name: REDIS_PORT
           value: "6379"
         - name: REDIS_DB

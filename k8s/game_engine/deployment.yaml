@@ -30,7 +30,7 @@ spec:
         - name: DATA_URL
           value: "http://ksp-data-service:8083"
         - name: REDIS_HOST
-          value: "ksp-redis-service"
+          value: "ksp-redis-game-engine-service"
         - name: REDIS_PORT
           value: "6379"
         - name: REDIS_DB

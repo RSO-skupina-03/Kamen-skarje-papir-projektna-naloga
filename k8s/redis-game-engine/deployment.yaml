@@ -1,18 +1,18 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ksp-redis-frontend
+  name: ksp-redis-game-engine
   labels:
-    app: ksp-redis-frontend
+    app: ksp-redis-game-engine
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ksp-redis-frontend
+      app: ksp-redis-game-engine
   template:
     metadata:
       labels:
-        app: ksp-redis-frontend
+        app: ksp-redis-game-engine
     spec:
       containers:
       - name: redis
