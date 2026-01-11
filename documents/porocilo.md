@@ -2,13 +2,10 @@
 
 ## Osnovni podatki
 
-**Naslov projekta:** Predelava aplikacije Kamen-Škarje-Papir v Cloud Native Mikro Storitve
-
-**Člani skupine:** Bernard Kučina, Filip Merkan
-
-**Povezava do organizacije:** https://github.com/RSO-skupina-03
-
-**Povezava do aplikacije:** http://kamen-skarje-papir.click
+- **Naslov projekta:** Predelava aplikacije Kamen-Škarje-Papir v Cloud Native Mikro Storitve
+- **Člani skupine:** Bernard Kučina, Filip Merkan
+- **Povezava do organizacije:** https://github.com/RSO-skupina-0
+- **Povezava do aplikacije:** http://kamen-skarje-papir.click
 
 ---
 
@@ -28,7 +25,7 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 - **Komunikacija:** REST API
 - **Avtentikacija:** JWT, OAuth 2.0 integracija
 - **CI/CD:** GitHub Actions
-- **API Gateway:** Traefik/NGINX
+- **API Gateway:** NGINX
 
 ### Razvojno okolje
 - **IDE:** Visual Studio Code  
@@ -43,11 +40,12 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 ## Shema arhitekture
 
 <p align="center">
-  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="80%">
+  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="100%">
 </p>
 
 
 ---
+<div style="page-break-after: always;"></div>
 
 ## Seznam funkcionalnosti mikrostoritev
 
@@ -125,91 +123,56 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 ### Osnovni primeri uporabe:
 
 1. **Prijava naročnika**
-   - Naročnik dostopa do aplikacije prek domene http://kamen-skarje-papir.click.
-   - Naročnik klikne gumb "Prijava Google"
-   - Sistem preusmeri na OAuth provider
-   - OAuth provider vrne avtentikacijsko kodo
-   - Naročnik je preusmerjen na začetni meni
-  
-2. **Prijava uporabika**
-   - Uporabnik dostopa do aplikacije prek domene http://kamen-skarje-papir.click.
-   - Uporabnik vpiše svoje uporabiško ime
-   - Uporabnik klikne gumb "Prijava"
-  
-3. **Prijava Gosta**
-   - Uporabnik dostopa do aplikacije prek domene http://kamen-skarje-papir.click.
-   - Uporabnik klikne gumb "Gost"
+   - Naročnik dostopa do aplikacije prek domene [http://kamen-skarje-papir.click](http://kamen-skarje-papir.click).
+   - Naročnik klikne gumb **»Prijava Google«**.
+   - Sistem naročnika preusmeri na OAuth ponudnika.
+   - OAuth ponudnik po uspešni prijavi vrne avtentikacijsko kodo.
+   - Naročnik je preusmerjen na začetni meni aplikacije.
 
-4. **Nova igra KŠP**
-   - Uporabnik/Gost/Naročnik klikne gumb "KŠP"
-   - Prikaže se igralna konzola za igro KŠP
-   - Ob pritisku na gumb Game Engine Service ustavri novo instanco igre KŠP
+2. **Prijava uporabnika**
+   - Uporabnik dostopa do aplikacije prek domene [http://kamen-skarje-papir.click](http://kamen-skarje-papir.click).
+   - Uporabnik vnese svoje uporabniško ime.
+   - Uporabnik klikne gumb **»Prijava«**.
 
-5. **Nova igra KŠPOV**
-   - Uporabnik/Gost/Naročnik klikne gumb "KŠPOV"
-   - Prikaže se igralna konzola za igro KŠPOV
-   - Ob pritisku na gumb Game Engine Service ustavri novo instanco igre KŠPOV
+3. **Prijava gosta**
+   - Gost dostopa do aplikacije prek domene [http://kamen-skarje-papir.click](http://kamen-skarje-papir.click).
+   - Gost klikne gumb **»Gost«**.
 
-6. **Igra poteze KSP**
-   - Uporabnik/Gost/Naročnik izbere možnost (Kamen/Škarje/Papir)
-   - Game Engine Service izračuna rezultat
-   - Session Service posodobi stanje igre v okviru izbranega `tenant_id`
+4. **Nova igra KŠP/KŠPOV**
+   - Uporabnik/gost/naročnik klikne gumb **»KŠP« / »KŠPOV«**.
+   - Prikaže se igralni vmesnik za igro KŠP.
+   - Ob tem se prek klica mikrostoritve **Game Engine Service** ustvari nova instanca igre KŠP.
 
-7. **Igra poteze KSPOV**
-   - Uporabnik izbere orožje (Kamen/Škarje/Papir/Ogenj/Voda)
-   - Game Engine izračuna rezultat z razširjenimi pravili
-   - Session Service posodobi stanje igre v okviru izbranega `tenant_id`
+5. **Igranje poteze KŠP**
+   - Uporabnik/gost/naročnik izbere možnost (**kamen/škarje/papir**).
+   - Mikrostoritev **Game Engine Service** izračuna rezultat poteze.
+   - V igralnem vmesniku se prikaže posodobljen rezultat.
 
-8. **Pregled zgodovine KSP**
-   - Uporabnik zahteva zgodovino KSP iger
-   - History Service vrne shranjene rezultate filtrirane po `tenant_id`
-   - Sistem prikaže statistike
+6. **Igranje poteze KŠPOV**
+   - Uporabnik/gost/naročnik izbere možnost (**kamen/škarje/papir/ogenj/voda**).
+   - Mikrostoritev **Game Engine Service** izračuna rezultat poteze.
+   - V igralnem vmesniku se prikaže posodobljen rezultat.
 
-9.  **Pregled zgodovine KSPOV**
-   - Uporabnik zahteva zgodovino KSPOV iger
-   - History Service vrne shranjene rezultate filtrirane po `tenant_id`
-   - Sistem prikaže statistike
+7. **Pregled zgodovine KŠP/KŠPOV**
+   - Naročnik zahteva pregled zgodovine iger KŠP/KŠPOV.
+   - Mikrostoritev **Data Service** vrne shranjene rezultate iger KŠP/KŠPOV.
+   - Prikaže se zgodovina iger KŠP.
 
-10. **Brisanje zgodovine**
-   - Uporabnik zahteva brisanje zgodovine
-   - History Service počisti podatke iz PostgreSQL z uveljavljeno RLS po `tenant_id`
-   - Sistem potrdi uspešno brisanje
+8.  **Brisanje zgodovine**
+   - Naročnik zahteva brisanje zgodovine iger.
+   - Mikrostoritev **Data Service** izbriše podatke iz baze **PostgreSQL**.
+   - Prikaže se prazna zgodovina iger.
 
-11. **Odjava uporabnika**
-   - Uporabnik se odjavi iz sistema
-   - Auth Service invalidira JWT token
-   - Sistem preusmeri na OAuth provider za odjavo
-   - Sistem preusmeri na prijavo
 
-### Multi-tenant primer uporabe - Prijava in igranje v okviru najemnika
-
-**Udeleženci:** Uporabnik, API Gateway, Auth Service, Session Service, Game Engine, History Service
-
+### Kompleksnejši primer uporabe:
 **Tok:**
-1. Uporabnik odpre `acme.example.com` (ali pošlje `X-Tenant-ID: acme`).
-2. API Gateway zabeleži `tenant_id` in doda ga v posredovane zahteve.
-3. Uporabnik se prijavi prek OAuth; Auth Service izda JWT, ki vsebuje `tenant_id`.
-4. Uporabnik ustvari novo KSPOV igro; Session Service ustvari sejo v Redis pod imenom prostora `tenant:acme:*`.
-5. Uporabnik odigra poteze; Session Service kliče Game Engine, posodablja stanje v okviru `tenant_id`.
-6. Po zaključku igre Session Service pošlje rezultat v History Service; v PostgreSQL je uveljavljena RLS po `tenant_id`.
-7. Uporabnik pregleda zgodovino; vrnejo se samo rezultati z `tenant_id = acme`.
-
-### Kompleksnejši primer uporabe - Zaključek igre s shranjevanjem:
-
-**Udeleženci:** Uporabnik, Session Service, Game Engine, History Service, Auth Service
-
-**Tok:**
-1. Uporabnik igra zadnjo potezo v KSPOV igri (15. poteza)
-2. Session Service pošlje potezo v Game Engine
-3. Game Engine vrne rezultat z oznako `isFinished: true`
-4. Session Service shrani končno stanje v Redis
-5. Session Service asinhrono pošlje rezultat v History Service
-6. History Service shrani rezultat v PostgreSQL
-7. Session Service počisti igro iz Redis
-8. Uporabnik vidi končni rezultat in statistike
-
-**Komunikacije:**
-- Session → Game Engine (HTTP): `POST /game/kspov/play`
-- Session → History (HTTP): `POST /history/ingest`
-- UI → Session (HTTP): `POST /sessions/{id}/move`
+1. Naročnik dostopa do aplikacije prek domene [http://kamen-skarje-papir.click](http://kamen-skarje-papir.click).
+2. Naročnik klikne gumb **»Prijava z Googlom«** in se uspešno avtenticira.
+3. Naročnik klikne gumb **»KŠPOV«**; mikrostoritev **Game Engine Service** ustvari novo instanco igre.
+4. Naročnik odigra igro, igralni vmesnik pa prikaže končni rezultat.
+5. Mikrostoritev **Data Service** shrani rezultat v bazo **PostgreSQL**.
+6. Naročnik klikne gumb **»Zgodovina«**.
+7. Mikrostoritev **Data Service** pridobi podatke o zgodovini iger KŠPOV.
+8. Naročnik zahteva brisanje zgodovine.
+9. Prikaže se prazna zgodovina iger.
 

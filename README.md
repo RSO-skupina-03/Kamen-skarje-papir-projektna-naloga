@@ -28,7 +28,7 @@ The player plays against the computer. The system supports three user roles:
 
 ### 1.3 Diagram
 <p align="center">
-  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="70%">
+  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="100%">
 </p>
 
 ## 2. Health & Readiness

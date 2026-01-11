@@ -96,7 +96,7 @@ Sistem je sestavljen iz naslednjih komponent:
 
 #### 4.1.1 Frontend, Session, API Gateway Service
 - **Ime mikrostoritve v repozitoriju:** `frontend`
-- **Host/port:** `http://localhost:8080`
+- **Host/port:** `http://kamen-skarje-papir.click:8080`
 - **Vloga:** uporabniški vmesnik + API prehod + upravljanje sej (piškotki)
 - **Glavne poti:**
   - `GET /` – prikaz strani za prijavo uporabnika
@@ -119,8 +119,7 @@ Sistem je sestavljen iz naslednjih komponent:
 
 #### 4.1.2 Game Engine Service
 - **Ime mikrostoritve v repozitoriju:** `game_engine`
-- **Host/port:** `http://localhost:8081`  
-  *(znotraj Docker Compose: `http://game_engine:8081`)*
+- **Host/port:** `http://kamen-skarje-papir.click:8081` 
 - **Vloga:** izvajanje logike igre in shranjevanje stanja v Redis
 - **Glavne poti:**
   - `POST /game/ksp/nova` – inicializira novo igro *Kamen–Škarje–Papir*
@@ -134,8 +133,7 @@ Sistem je sestavljen iz naslednjih komponent:
 
 #### 4.1.4 Authentication Service
 - **Ime mikrostoritve v repozitoriju:** `auth`
-- **Host/port:** `http://localhost:8082`  
-  *(znotraj Docker Compose: `http://auth:8082`)*
+- **Host/port:** `http://kamen-skarje-papir.click:8082`  
 - **Vloga:** integracija OAuth2/OIDC (Google) in validacija ID žetonov
 - **Glavne poti:**
   - `GET /auth/google/login` – preusmeritev uporabnika na *Google Auth Platform*
@@ -145,8 +143,7 @@ Sistem je sestavljen iz naslednjih komponent:
 
 #### 4.1.3 Data Service
 - **Ime mikrostoritve v repozitoriju:** `data`
-- **Host/port:** `http://localhost:8083`  
-  *(znotraj Docker Compose: `http://data:8083`)*
+- **Host/port:** `http://kamen-skarje-papir.click:8083`  
 - **Vloga:** trajno shranjevanje podatkov in izvajanje poizvedb nad podatkovno bazo
 - **Glavne poti:**
   - `POST /data/ksp/insert` – zapiše končni rezultat igre *Kamen–Škarje–Papir* v podatkovno bazo
@@ -164,7 +161,7 @@ Sistem je sestavljen iz naslednjih komponent:
 
 ### 3.2 Shema arhitekture
 <p align="center">
-  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="80%">
+  <img src="arhi.png" alt="Arhitekturna shema mikro storitev" width="100%">
 </p>
 
 
