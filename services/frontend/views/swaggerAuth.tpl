@@ -10,7 +10,7 @@
     <script src="https://unpkg.com/swagger-ui-dist@5/swagger-ui-bundle.js"></script>
     <script>
       window.ui = SwaggerUIBundle({
-        url: "/docs.json",
+        url: "/docs/auth.json",
         dom_id: "#swagger-ui"
       });
     </script>

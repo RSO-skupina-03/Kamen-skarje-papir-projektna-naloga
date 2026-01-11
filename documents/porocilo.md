@@ -4,14 +4,14 @@
 
 - **Naslov projekta:** Predelava aplikacije Kamen-Škarje-Papir v Cloud Native Mikro Storitve
 - **Člana skupine:** Bernard Kučina, Filip Merkan
-- **Povezava do organizacije:** [https://github.com/RSO-skupina-0](https://github.com/RSO-skupina-0)
+- **Povezava do organizacije:** [https://github.com/RSO-skupina-03](https://github.com/RSO-skupina-03)
 - **Povezava do aplikacije:** [http://kamen-skarje-papir.click](http://kamen-skarje-papir.click)
 
 ---
 
 ## Kratek opis projekta
 
-Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Papir" ki je objavljena v [GitHub organizaciji](https://github.com/RSO-skupina-03) v sodobno cloud native arhitekturo z uporabo mikro storitev. Trenutna aplikacija, ki podpira dve različici igre (klasično KŠP in razširjeno KŠPOV z Ogenj/Voda), bo razdeljena na 4 neodvisnih mikro storitev, ki bodo omogočale boljšo skalabilnost, vzdrževanje in razširljivost. Rešitev bo rešila probleme monolitne arhitekture, kot so težko vzdrževanje, omejena skalabilnost in tesno povezanost komponent, ter zagotovila visoko dostopnost in odpornost na napake.
+Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen–Škarje–Papir", objavljene v [GitHub organizaciji](https://github.com/RSO-skupina-03), v sodobno cloud-native arhitekturo z uporabo mikrostoritev. Aplikacija podpira dve različici igre: klasično **KŠP** in **KŠPOV** ("Kamen–Škarje–Papir–Ogenj–Voda") ter je razdeljena na štiri neodvisne mikrostoritve. Igralec proti računalniku odigra sedem iger KŠP oziroma petnajst iger KŠPOV. Po zaključeni partiji sistem razglasi zmagovalca.
 
 ---
 
@@ -164,6 +164,8 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 8. Naročnik zahteva brisanje zgodovine.
 9. Prikaže se prazna zgodovina iger.
 
+<div style="page-break-after: always;"></div>
+
 ## Seznam opravljenih/vključenih osnovnih in dodatnih projektnih zahtev
 
 
@@ -171,7 +173,7 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 |----------|-------------|
 | **Repozitorij** | Repozitorij v GitHub organizaciji [RSO-skupina-03](https://github.com/RSO-skupina-03/Kamen-skarje-papir-projektna-naloga) vsebuje izvorno kodo, Dockerfile-e, Kubernetes manifeste (Deployment, Service, ConfigMap), CI/CD pipeline (GitHub Actions), Azure deployment skripte in dokumentacijo. Uporabljena je strategija razvejitve z master branch-om. |
 | **Mikrostoritve in »cloud-native« aplikacija** | Aplikacija je razdeljena na 4 mikrostoritve (Python 3.11+, Bottle, Gunicorn): **Authentication Service** (OAuth2/OIDC), **Game Engine Service** (igralna logika KŠP/KŠPOV), **Data Service** (PostgreSQL), **Frontend, Session & API Gateway Service** (UI, seje, usmerjanje). Vsaka ima Dockerfile in Kubernetes manifeste (Deployment, Service). Nameščene v AKS z cloud-native principi (health checks, readiness probes, resource limits). PostgreSQL (Azure Flexible Server) za trajno shranjevanje z ločenimi tabelami za KŠP in KŠPOV. |
-| **Dokumentacija** | Dokumentacija v Markdown formatu: **README.md** (lokalna/oblačna namestitev, arhitektura), **dokumentacija.md** (tehnologije, mikrostoritve), **porocilo.md** (projekt, funkcionalnosti, primeri uporabe, zahteve). Vključuje arhitekturni diagram (arhi.png). |
+| **Dokumentacija** | Dokumentacija v Markdown formatu: **README.md** (lokalna/oblačna namestitev, arhitektura), **dokumentacija.md** (tehnična dokumentacija), **porocilo.md** (projekt, funkcionalnosti, primeri uporabe, zahteve). Vključuje arhitekturni diagram (arhi.png). **Porocilo.md** in **dokumentacija.md** najdete v `documents/markdown`.|
 | **Dokumentacija API** | Vse mikrostoritve izpostavljajo Swagger UI na `/docs` z OpenAPI 3.0 specifikacijo (Bottle-Swagger). Dokumentacija vključuje endpoint-e (GET, POST, PUT, DELETE), JSON sheme zahtev/odgovorov, HTTP status kode (400, 404, 500) in primere uporabe. Swagger UI omogoča interaktivno testiranje API-jev v brskalniku. |
 | **Cevovod CI/CD** | GitHub Actions pipeline z dvema workflow datotekama: **ci-cd.yml** (CI: checkout, Python setup, pytest, gradnja Docker slik, push v Docker Hub) in **deploy.yml** (CD: Azure login OIDC, AKS credentials, posodabljanje SecretProviderClass, nameščanje Kubernetes manifestov, restart deployment-ov, rollout status). Sproži se ob push-u v master ali ročno (`workflow_dispatch`). Docker slike (filipmerkan/ksp-*) se avtomatsko posodobijo. |
 | **Helm charts** | Helm se uporablja le za nameščanje NGINX Ingress Controller v Kubernetes okolju. |

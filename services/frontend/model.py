@@ -8,6 +8,21 @@ GAME_ENGINE_URL = os.environ["GAME_ENGINE_URL"]
 AUTH_LOCAL = os.environ["AUTH_LOCAL"]
 DATA_URL = os.environ["DATA_URL"]
 
+def docs_game_engine_json():
+    r = requests.get(f"{GAME_ENGINE_URL}/docs.json", timeout=(2, 6))
+    r.raise_for_status()
+    return r.text
+
+def docs_data_json():
+    r = requests.get(f"{DATA_URL}/docs.json", timeout=(2, 6))
+    r.raise_for_status()
+    return r.text
+
+def docs_auth_json():
+    r = requests.get(f"{AUTH_LOCAL}/docs.json", timeout=(2, 6))
+    r.raise_for_status()
+    return r.text
+
 def game_engine_init_user(uporabnik: str, mail: str, is_subscriber: str, timeout: float = 5.0) -> dict:
     """
     Tell the game engine who logged in. Raises HTTPError(502) on failure.

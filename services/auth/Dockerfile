@@ -16,7 +16,6 @@ RUN python3 -m venv .venv \
 
 
 COPY conf/ conf/
-COPY views/ views/
 COPY swagger.py swagger.py
 COPY spletni_umesnik.py spletni_umesnik.py
 

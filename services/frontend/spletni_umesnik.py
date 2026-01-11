@@ -11,6 +11,7 @@ load_dotenv()
 ID_IGRE_COKOLADNI_PISKOT = "id_igre"
 STARI_SLOVENSKI_PREGOVOR = os.environ["SESSION_COOKIE_SECRET"]
 
+
 @bottle.error(404)
 def error404(error):
      return bottle.template('views/error.tpl')
@@ -159,11 +160,57 @@ def docs_json():
     return json.dumps(swagger.OPENAPI_SPEC, ensure_ascii=False, indent=2)
 
 
-@bottle.get("/docs")
+@bottle.get("/docs/frontend")
+@log_request
 def docs_ui():
     # Swagger UI via CDN that loads /docs.json from this service
     response.content_type = "text/html; charset=utf-8"
     return bottle.template('views/swagger.tpl')
+
+@bottle.get("/docs/game-engine.json")
+@log_request
+def docs_game_engine_json():
+    data = model.docs_game_engine_json()
+    response.content_type = "application/json; charset=utf-8"
+    return data
+
+@bottle.get("/docs/game-engine")
+@log_request
+@rate_limit(max_requests=60, window_seconds=60)
+def docs_game_engine_ui():
+    # This UI loads the OpenAPI JSON from the frontend (proxy), not from game_engine directly
+    response.content_type = "text/html; charset=utf-8"
+    return bottle.template('views/swaggerGame.tpl')
+
+@bottle.get("/docs/data.json")
+@log_request
+def docs_data_json():
+    data = model.docs_data_json()
+    response.content_type = "application/json; charset=utf-8"
+    return data
+
+@bottle.get("/docs/data")
+@log_request
+@rate_limit(max_requests=60, window_seconds=60)
+def docs_game_engine_ui():
+    # This UI loads the OpenAPI JSON from the frontend (proxy), not from data directly
+    response.content_type = "text/html; charset=utf-8"
+    return bottle.template('views/swaggerData.tpl')
+
+@bottle.get("/docs/auth.json")
+@log_request
+def docs_auth_json():
+    data = model.docs_data_json()
+    response.content_type = "application/json; charset=utf-8"
+    return data
+
+@bottle.get("/docs/auth")
+@log_request
+@rate_limit(max_requests=60, window_seconds=60)
+def docs_game_engine_ui():
+    # This UI loads the OpenAPI JSON from the frontend (proxy), not from data directly
+    response.content_type = "text/html; charset=utf-8"
+    return bottle.template('views/swaggerAuth.tpl')
 
 @bottle.route('/', method=['GET','HEAD'])
 @log_request
