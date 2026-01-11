@@ -51,7 +51,7 @@ All microservices expose:
 - **CI/CD:** **GitHub Actions**
 - **API Gateway:** Frontend service acts as API gateway (**Traefik/NGINX** optional/future)
 
-## 4. Running the project
+## 4. Running Project Locally
 
 ### 4.1 Prerequisites
 - Docker + Docker Compose
@@ -75,7 +75,9 @@ After updating the environment variables, you can run the web application locall
 docker compose up --build
 ```
 
-## 4.3 Verify Services
+## 5. Running Project on Microsoft Azure
+
+## 6. Verify Services
 
 You can verify the health, readiness, and available endpoints of each microservice via Swagger UI:
 
@@ -93,5 +95,5 @@ http://localhost:8082/docs
 http://localhost:8083/docs
 ```
 
-## 5. Branching Strategy
+## 7. Branching Strategy
 Due to small project there is only one `master` branch.
