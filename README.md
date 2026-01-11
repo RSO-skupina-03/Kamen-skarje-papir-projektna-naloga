@@ -294,13 +294,13 @@ You can verify the health, readiness, and available endpoints of each microservi
 http://localhost:8080/docs/frontend
 
 # Swagger UI for Game Engine Service
-http://localhost:8080/docs/game-engine
+http://localhost:8081/docs
 
 # Swagger UI for Authentication Service
-http://localhost:8080/docs/auth
+http://localhost:8082/docs
 
 # Swagger UI for Data Service
-http://localhost:8080/docs/data
+http://localhost:8083/docs
 ```
 
 ### 6.2 Cloud Deployment (Azure AKS)

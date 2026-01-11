@@ -80,7 +80,7 @@ Google OAuth redirect URI: `http://kamen-skarje-papir.click:8082/auth/google/cal
 ## 4. Arhitektura sistema
 Sistem je sestavljen iz štirih mikrostoritev. Vsaka mikrostoritev ima poti `/health` in `/ready`, ki podajata informacijo o stanju storitve.
 
-Pot `/health` je namenjena preverjanju, ali mikrostoritev deluje (liveness). Pot `/ready` prikazuje, ali je mikrostoritev pripravljena na obdelavo zahtevkov (readiness): preveri prisotnost zahtevanih okoljskih spremenljivk ter razpoložljivost odvisnosti, na primer Redisa.
+Pot `/health` je namenjena preverjanju, ali mikrostoritev deluje (liveness). Pot `/ready` prikazuje, ali je mikrostoritev pripravljena na obdelavo zahtevkov (readiness): preveri prisotnost zahtevanih okoljskih spremenljivk ter razpoložljivost odvisnosti, na primer Redisa. URL-je mikrostoritve **Frontend, Session & API Gateway** lahko pregledate in preizkusite prek Swagger UI na poti `/docs/frontend`. Vse ostale mikrostoritve lahko testirate lokalno, če aplikacijo zaženete lokalno, prek Swagger UI na poti `/docs`.
 
 ### 4.1 Pregled mikrostoritev
 Sistem je sestavljen iz naslednjih komponent:
