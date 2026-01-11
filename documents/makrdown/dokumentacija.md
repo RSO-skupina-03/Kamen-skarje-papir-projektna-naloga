@@ -103,9 +103,9 @@ Sistem je sestavljen iz naslednjih komponent:
   - `PUT /frontend/login` – prijava uporabnika (*Gost* ali *Uporabnik*) in nastavitev piškotkov
   - `GET /auth/finalize` – klic mikrostoritve *Authentication Service* za dokončanje avtentikacije naročnika preko *Google Auth Platform* in nastavitev piškotkov
   - `GET /docs/frontend` — testiranje in dokumentacija glavnih poti Frontend, Session, API Gateway mikrostoritve
-  - `GET /docs/game-engine` — testiranje in dokumentacija glavnih poti Game Engine mikrostoritve
-  - `GET /docs/data` — testiranje in dokumentacija glavnih poti Data mikrostoritve
-  - `GET /docs/auth` — testiranje in dokumentacija glavnih poti Authentication mikrostoritve
+  - `GET /docs/game-engine` — dokumentacija glavnih poti Game Engine mikrostoritve
+  - `GET /docs/data` — dokumentacija glavnih poti Data mikrostoritve
+  - `GET /docs/auth` — dokumentacija glavnih poti Authentication mikrostoritve
   - `GET /igra` – prikaz začetnega menija za igranje iger *Kamen–Škarje–Papir* in *Kamen–Škarje–Papir–Ogenj–Voda*
   
   - `POST /ksp` — pridobi podatke o uporabnikovi izbiri (kamen, škarje ali papir) in jih posreduje mikrostoritvi *Game Engine*
