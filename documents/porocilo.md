@@ -3,7 +3,7 @@
 ## Osnovni podatki
 
 - **Naslov projekta:** Predelava aplikacije Kamen-Škarje-Papir v Cloud Native Mikro Storitve
-- **Člani skupine:** Bernard Kučina, Filip Merkan
+- **Člana skupine:** Bernard Kučina, Filip Merkan
 - **Povezava do organizacije:** https://github.com/RSO-skupina-0
 - **Povezava do aplikacije:** http://kamen-skarje-papir.click
 
@@ -30,7 +30,7 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 ### Razvojno okolje
 - **IDE:** Visual Studio Code  
 - **Upravljanje različic:** Git, GitHub  
-- **Testiranje API-jev:** Swagger UI  
+- **Testiranje API-jev:** Swagger 
 - **Dokumentacija:** Swagger (OpenAPI 3.0), Markdown  
 
 ---
@@ -50,71 +50,59 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
 ## Seznam funkcionalnosti mikrostoritev
 
 ### 1. Authentication Service
-**Funkcionalnosti:**
-- Integracija OAuth2/OIDC (Google) in validacija ID žetonov
+**Funkcionalnosti:** integracija OAuth2/OIDC (Google) in validacija ID žetonov.
 
 **Glavne poti:**
   - `GET /auth/google/login` – preusmeritev uporabnika na *Google Auth Platform*
-  - `GET /auth/google/callback` – obdelava povratnega klica (*callback*) iz *Google Auth Platform*, generiranje enkratne vstopnice ter posredovanje podatkov mikrostoritvi *Frontend, Session, API Gateway*
+  - `GET /auth/google/callback` – obdelava povratnega klica iz *Google Auth Platform*
   - `GET /auth/redeem` – vrne podatke o prijavljenem uporabniku na podlagi vstopnice
 
 ### 2. Game Engine Service
-**Funkcionalnosti:**
-- Implementacija igralne logike za KŠP, zmagovalec določen po sedmih igrah
-- Implementacija igralne logike za KŠPOV, zmagovalec določen po petnajstih igrah
-- Shranjevanje stanja v trenurne igre na Redis
+**Funkcionalnosti:** implementacija igralne logike za KŠP igri KŠPOV, shranjevanje stanja v trenutne igre na Redis.
   
 **Glavne poti:**
-  - `POST /game/ksp/nova` – inicializira novo igro *Kamen–Škarje–Papir*
-  - `GET /game/ksp/state` – vrne trenutno stanje igre *Kamen–Škarje–Papir*
-  - `POST /game/ksp/poteza` – izvede potezo in izračuna novo stanje igre *Kamen–Škarje–Papir*
+  - `POST /game/ksp/nova` – inicializira novo igro *KŠP*
+  - `GET /game/ksp/state` – vrne trenutno stanje igre *KŠP*
+  - `POST /game/ksp/poteza` – izvede potezo in izračuna novo stanje igre *KŠP*
   
-  - `POST /game/kspov/nova` – inicializira novo igro *Kamen–Škarje–Papir–Ogenj–Voda*
-  - `GET /game/kspov/state` – vrne trenutno stanje igre *Kamen–Škarje–Papir–Ogenj–Voda*
-  - `POST /game/kspov/poteza` – izvede potezo in izračuna novo stanje igre *Kamen–Škarje–Papir–Ogenj–Voda*
+  - `POST /game/kspov/nova` – inicializira novo igro *KŠPOV*
+  - `GET /game/kspov/state` – vrne trenutno stanje igre *KŠPOV*
+  - `POST /game/kspov/poteza` – izvede potezo in izračuna novo stanje igre *KŠPOV*
 
 ### 4. Data Service
-**Funkcionalnosti:**
-- Shranjevanje zaključenih iger (PostgreSQL)
-- Pregled zgodovine iger
-- Brisanje zgodovine
+**Funkcionalnosti:** shranjevanje zaključenih iger (PostgreSQL), pregled zgodovine iger, brisanje zgodovine.
 
 **Glavne poti:**
-  - `POST /data/ksp/insert` – zapiše končni rezultat igre *Kamen–Škarje–Papir* v podatkovno bazo
+  - `POST /data/ksp/insert` – zapiše končni rezultat igre *KŠP* v podatkovno bazo
   - `GET /data/ksp/get/id` – pridobi ustrezen identifikator igre
   - `GET /data/ksp/history` – vrne zgodovino iger uporabnika
   - `POST /data/ksp/delete` – izbriše zgodovino iger uporabnika
 
-  - `POST /data/kspov/insert` – zapiše končni rezultat igre *Kamen–Škarje–Papir–Ogenj–Voda* v podatkovno bazo
+  - `POST /data/kspov/insert` – zapiše končni rezultat igre *KŠPOV* v podatkovno bazo
   - `GET /data/kspov/get/id` – pridobi ustrezen identifikator igre
   - `GET /data/kspov/history` – vrne zgodovino iger uporabnika
   - `POST /data/kspov/delete` – izbriše zgodovino iger uporabnika
 
 ### 5. Frontend, Session, API Gateway Service
-**Funkcionalnosti:**
-- Usmerjanje zahtev na mikrostoritve
-- Prikaz uporabniškega vmesnika (HTML/CSS/JS)
-- Upravljanje sej (piškotki)
-- Omejevanje hitrosti zahtevkov (rate limiting)
-- Porazdeljevanje bremena med mikrosotiravmi (load balancing)
+**Funkcionalnosti:** usmerjanje zahtev na mikrostoritve, prikaz uporabniškega vmesnika (HTML/CSS/JS), upravljanje sej (piškotki), omejevanje hitrosti zahtevkov (rate limiting), porazdeljevanje bremena med mikrosotiravmi (load balancing).
 
 **Glavne poti:**
   - `GET /` – prikaz strani za prijavo uporabnika
   - `PUT /frontend/login` – prijava uporabnika (*Gost* ali *Uporabnik*) in nastavitev piškotkov
-  - `GET /auth/finalize` – klic mikrostoritve *Authentication Service* za dokončanje avtentikacije naročnika preko *Google Auth Platform* in nastavitev piškotkov
-  - `GET /igra` – prikaz začetnega menija za igranje iger *Kamen–Škarje–Papir* in *Kamen–Škarje–Papir–Ogenj–Voda*
+  - `GET /auth/finalize` – klic mikrostoritve *Authentication Service* za dokončanje avtentikacije
+  - `GET /igra` – prikaz začetnega menija za igranje iger *KŠP* in *KŠPOV*
   
-  - `POST /ksp` — pridobi podatke o uporabnikovi izbiri (kamen, škarje ali papir) in jih posreduje mikrostoritvi *Game Engine*
-  - `GET /ksp` — iz piškotkov prebere podatke o uporabniku, pridobi stanje igre (klic mikrostoritve *Game Engine*) in prikaže igro
-  - `GET /nova_igra_ksp` — inicializacija nove igre *Kamen–Škarje–Papir*
-  - `GET /zgodovina_ksp` — pridobi podatke o zgodovini iger *Kamen–Škarje–Papir* (klic mikrostoritve *Data Service*) in prikaže zgodovino
-  - `DELETE /brisi_ksp` — izbriše zgodovino iger *Kamen–Škarje–Papir* (klic mikrostoritve *Data Service*) 
+  - `POST /ksp` — pridobi podatke o uporabnikovi izbiri (kamen, škarje ali papir)
+  - `GET /ksp` — iz piškotkov prebere podatke o uporabniku, pridobi stanje igre *KŠP*
+  - `GET /nova_igra_ksp` — inicializacija nove igre *KŠP*
+  - `GET /zgodovina_ksp` — pridobi podatke o zgodovini iger
+  - `DELETE /brisi_ksp` — izbriše zgodovino iger *KŠP* (klic mikrostoritve *Data Service*) 
   
-  - `POST /kspov` — pridobi podatke o uporabnikovi izbiri (kamen, škarje, papir, ogenj ali voda) in jih posreduje mikrostoritvi *Game Engine*
-  - `GET /kspov` — iz piškotkov prebere podatke o uporabniku, pridobi stanje igre (klic mikrostoritve *Game Engine*) in prikaže igro
-  - `GET /nova_igra_kspov` — inicializacija nove igre *Kamen–Škarje–Papir–Ogenj–Voda*
-  - `GET /zgodovina_kspov` — pridobi podatke o zgodovini iger *Kamen–Škarje–Papir–Ogenj–Voda* (klic mikrostoritve *Data Service*) in prikaže zgodovino
-  - `DELETE /brisi_kspov` — izbriše zgodovino iger *Kamen–Škarje–Papir–Ogenj–Voda* (klic mikrostoritve *Data Service*)
+  - `POST /kspov` — pridobi podatke o uporabnikovi izbiri (kamen, škarje, papir, ogenj ali voda)
+  - `GET /kspov` — iz piškotkov prebere podatke o uporabniku, pridobi stanje igre *KŠPOV*
+  - `GET /nova_igra_kspov` — inicializacija nove igre *KŠPOV*
+  - `GET /zgodovina_kspov` — pridobi podatke o zgodovini iger *KŠPOV*
+  - `DELETE /brisi_kspov` — izbriše zgodovino iger *KŠPOV* (klic mikrostoritve *Data Service*)
 
 ---
 
@@ -158,7 +146,7 @@ Projekt predstavlja predelavo obstoječe monolitne aplikacije "Kamen-Škarje-Pap
    - Mikrostoritev **Data Service** vrne shranjene rezultate iger KŠP/KŠPOV.
    - Prikaže se zgodovina iger KŠP.
 
-8.  **Brisanje zgodovine**
+8. **Brisanje zgodovine**
    - Naročnik zahteva brisanje zgodovine iger.
    - Mikrostoritev **Data Service** izbriše podatke iz baze **PostgreSQL**.
    - Prikaže se prazna zgodovina iger.
