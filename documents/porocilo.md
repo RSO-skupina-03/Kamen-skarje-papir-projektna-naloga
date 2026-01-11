@@ -4,8 +4,8 @@
 
 - **Naslov projekta:** Predelava aplikacije Kamen-Škarje-Papir v Cloud Native Mikro Storitve
 - **Člana skupine:** Bernard Kučina, Filip Merkan
-- **Povezava do organizacije:** https://github.com/RSO-skupina-0
-- **Povezava do aplikacije:** http://kamen-skarje-papir.click
+- **Povezava do organizacije:** [https://github.com/RSO-skupina-0](https://github.com/RSO-skupina-0)
+- **Povezava do aplikacije:** [http://kamen-skarje-papir.click](http://kamen-skarje-papir.click)
 
 ---
 
